@@ -1,0 +1,24 @@
+.tooltip{
+    background-color: var(--clr-text);
+    color: var(--clr-background);
+
+    font-size: var(--fs-small);
+    font-family: Roboto, 'sans-serif';
+    
+    border-radius: 1rem;
+    border-width: 0;
+
+    filter: var(--drop-shadow-large);
+
+    z-index: -1;
+}
+
+.tooltip__arrow{
+    width: 1rem;
+    height: 1rem;
+    z-index: -1;
+}
+
+.tooltip__content{
+    padding: 0.3rem;
+}

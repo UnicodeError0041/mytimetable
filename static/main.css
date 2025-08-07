@@ -1,0 +1,232 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+:root{
+  --drop-shadow-small: drop-shadow(2px 2px 2px #00000093);
+  --drop-shadow-medium: drop-shadow(1px 1px 3px #000000);
+  --drop-shadow-large: drop-shadow(2px 2px 6px #000000);
+}
+
+/* Colors */
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --clr-text: #160413;
+    --clr-background: #fadcf6;
+
+    --clr-secondary-light: #e9c3b0;
+    --clr-secondary: #ea9971;
+    --clr-secondary-dark: #da703c;
+
+    --clr-primary-light: #eebf51;
+    --clr-primary: #cc981e;
+    --clr-primary-dark: #9c7823;
+
+    --clr-error: #c21a1a;
+    --clr-warning: #d88416;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --clr-text: #fbe7f8;
+    --clr-background: #22051e;
+
+    --clr-secondary-light: #b76238;
+    --clr-secondary: #8d3d15;
+    --clr-secondary-dark: #6a2e10;
+
+    --clr-primary-light: #e3c47c;
+    --clr-primary: #e0ad34;
+    --clr-primary-dark: #bd8d1d;
+
+    --clr-error: #f41b1b;
+    --clr-warning: #f5b309;
+  }
+}
+
+/* Fonts */
+
+:root{
+    --fs-html:  100%;
+    --fs-default: 1rem;
+    --fs-h1:  4.210rem;
+    --fs-h2: 3.158rem; 
+    --fs-h3: 2.369rem; 
+    --fs-h4:  1.777rem; 
+    --fs-h5:  1.333rem; 
+    --fs-small:  0.750rem;
+    --fs-smaller: 0.563rem;
+}
+
+body {
+  font-family: Roboto, sans-serif;
+  font-weight: 400;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: Roboto, sans-serif;
+  font-weight: 700;
+}
+
+html, .--fs-html {font-size: var(--fs-html);} /* 16px */
+
+h1, .--fs-h1 {font-size: var(--fs-h1); /* 67.36px */}
+
+h2, .--fs-h2{font-size: var(--fs-h2); /* 50.56px */}
+
+h3, .--fs-h3{font-size: var(--fs-h3); /* 37.92px */}
+
+h4, .--fs-h4 {font-size: var(--fs-h4); /* 28.48px */}
+
+h5, .--fs-h5 {font-size: var(--fs-h5); /* 21.28px */}
+
+small, .--fs-small {font-size: var(--fs-small); /* 12px */}
+
+/* Default setting */
+
+html{
+  scroll-behavior: smooth;
+
+  scrollbar-color: var(--clr-secondary) var(--clr-background) ;
+}
+
+body{
+  background-color: var(--clr-background);
+  color: var(--clr-text);
+  --body-padding: 4rem;
+  padding: var(--body-padding);
+
+  padding-bottom: 20rem;
+}
+
+main{
+  display: grid;
+  gap: 6rem;
+}
+
+/* Helper classes */
+
+.--warning.--warning{
+  color: var(--clr-warning);
+  padding: 0.5rem;
+}
+
+.--error.--error{
+  color: var(--clr-error);
+  padding: 0.5rem;
+}
+
+.--secondary.--secondary{
+  color: var(--clr-secondary);
+  padding: 0.5rem;
+}
+
+.--invisible{
+  opacity: 0;
+}
+
+.--capitalize{
+  text-transform: capitalize;
+}
+
+.--pulse,
+.--pulse-on-hover{
+  position: relative;
+  overflow: hidden;
+}
+
+.--pulse::before,
+.--pulse-on-hover:hover::before{
+  content: '';
+
+  position: absolute;
+  top: 50%;
+  left: 50%;
+
+  translate: -50% -50%;
+
+  min-width: 100%;
+  min-height: 100%;
+
+  /* width: 5rem; */
+  aspect-ratio: 1;
+
+  background-color: var(--clr-text);
+
+  opacity: 10%;
+
+  border-radius: 100vmax;
+}
+
+
+.--pulse::before{
+    animation: pulse 1000ms ease-out 0s infinite normal forwards;
+}
+
+.--pulse-on-hover:hover:not(:disabled)::before{
+    animation: pulse 1000ms ease-out 0s normal forwards;
+}
+
+@keyframes pulse {
+	0% {
+		scale: 0%;
+    opacity: 20%;
+	}
+
+	100% {
+		scale: 200%;
+    opacity: 0%;
+	}
+}
+
+.--typewrite{
+  position: relative;
+  
+  > *{
+    max-width: min-content;
+    min-width: none;
+  }
+}
+
+.--typewrite:not(:focus-within)::after{
+  content: '';
+  
+  position: absolute;
+  inset: 0;
+  top: auto;
+  height: 1.3rem;
+
+  border-left: 2px solid var(--clr-text);
+
+  background-color: var(--clr-background);
+
+  animation:
+    /* blink 750ms step-end infinite, */
+    reveal 1000ms steps(20, end) forwards;
+}
+
+
+@keyframes reveal{
+  0%{
+    left: 0;
+  }
+
+  100%{
+    border-left-width: 0;
+    left: 100%;
+  }
+}
+
+.--spinning{
+  animation: spin 750ms ease-out 0s infinite normal forwards;
+}
+
+@keyframes spin {
+  0% {
+    rotate: 0deg;
+  }
+
+  100% {
+    rotate: 360deg;
+  }
+}

@@ -1,0 +1,124 @@
+.lesson{
+    font-size: var(--fs-small);
+    --clr-lesson: var(--clr-secondary);
+
+    padding: 0.3rem;
+
+    overflow: hidden;
+
+    width: 100%;
+    height: 100%;
+}
+
+.lesson__subject{
+    font-size: var(--fs-default);
+}
+
+.lesson__location,
+.lesson__course-code{
+    font-size: var(--fs-small);
+}
+
+
+.lesson__course-type{
+    font-size: var(--fs-smaller);
+}
+
+.lesson__course-code{
+    background-color: var(--clr-background);
+    color: var(--clr-text);
+
+    aspect-ratio: 1;
+    padding: 0.1rem;
+    border-radius:100vmax;
+}
+
+.lesson--lecture.lesson--lecture{
+    --clr-lesson: var(--clr-primary);
+}
+
+.lesson--saved{
+    background-color: var(--clr-lesson);
+    cursor: grab;
+}
+
+.lesson--saved.lesson--lecture{
+    color: var(--clr-background);
+}
+
+.lesson--queried,
+.lesson--alternative{
+    border: 4px dashed var(--clr-lesson);
+    cursor: pointer;
+    background-color: var(--clr-background);
+}
+
+.lesson--alternative::after{
+    content: '';
+    position: absolute;
+    inset: 0;
+    /* background-color: red; */
+}
+
+.lesson__tooltip-trigger{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.lesson__tooltip-content{
+    display: grid;
+    max-width: 20rem;
+    grid-template-columns: max-content 1fr;
+    gap: 0.5rem;
+    padding: 0.5rem;
+}
+
+.lesson__tooltip-data{
+    display: grid;
+    grid-column-start: 1;
+    grid-column-end: 3;
+    grid-template-columns: subgrid;
+
+    z-index: 999;
+}
+
+.lesson__tooltip-data-name{
+    grid-column-start: 1;
+}
+
+.lesson__tooltip-data-value{
+    grid-column-start: 2;
+}
+
+.lesson__tooltip-extra-content{
+    grid-column-start: 1;
+    grid-column-end: 3;
+
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+
+.timetable__element:has(.lesson){
+    border-radius: 0.3rem;
+    transition: 
+    scale 100ms ease-out,
+    filter 100ms ease-out
+    ;
+}
+
+.timetable__element:has(.lesson--alternative){
+    filter: var(--drop-shadow-medium);
+    scale: 102.5%;
+    z-index: 99;
+}
+
+.timetable__element:has(.lesson):hover,
+.timetable__element:has(.lesson--drag-entered){
+    filter: var(--drop-shadow-large);
+    scale: 105%;
+    z-index: 999;
+}
+

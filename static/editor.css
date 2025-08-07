@@ -1,0 +1,36 @@
+.editor{
+    display: grid;
+    gap: 2rem;
+}
+
+.editor__timetable-wrapper{
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.editor__timetable-wrapper--exporting{
+    width: 1920px;
+    max-width: none;
+}
+
+.editor__buttons{
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+
+    > * {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+}
+
+.editor__text-input{
+    translate: 0 0.2rem;
+}
+
+.editor__active-tab{
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}

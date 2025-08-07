@@ -1,0 +1,116 @@
+import { browser } from "$app/environment";
+import { createLessonManager, type LessonsManager as LessonManager } from "./lessonManager.svelte"
+import type { LessonData } from "./types";
+import {v4 as uuidv4} from "uuid";
+
+const SAVE_LESSON_IDS_KEY = "saveLessonIds";
+export const SAVE_LESSON_KEY_PREFIX = "save";
+
+export type SavedLessons = {
+    getSaveIds: () => string[],
+    getSaveNameForId: (id: string) => string | undefined,
+    getCurrentManager: () => LessonManager,
+
+    createSave: (name?: string, lessons?: LessonData[]) => string,
+    switchSave: (id: string) => boolean,
+    removeSave: (id: string) => boolean,
+}
+
+export type LessonSave = {
+    id: string,
+    saveName: string,
+    lessons: LessonData[],
+    lastModification: number
+}
+
+export function loadSavedLessonsFromLocalStorage(): SavedLessons{
+    let saveIds = $state(browser ? JSON.parse(localStorage.getItem(SAVE_LESSON_IDS_KEY) ?? "[]") as string[] : []);
+
+    let saves = $state(saveIds
+        .map(id => browser ?
+                JSON.parse(
+                    localStorage.getItem(`${SAVE_LESSON_KEY_PREFIX}${id}`) ?? "null"
+                )
+            :
+                null
+        )
+        .filter(s => s !== null) as LessonSave[]
+    );
+
+    const saveIds_ = $derived(saveIds);
+
+    $effect(() => {
+        localStorage.setItem(SAVE_LESSON_IDS_KEY, JSON.stringify(saveIds));
+    })
+
+    let managers = $state(saves.map(s => createLessonManager(s.lessons, s.id, s.saveName)));
+
+    const createSave = (name?: string, lessons?: LessonData[]) => {
+        lessons ??= [];
+        name ??= "Új órarend";
+
+        const id = uuidv4();
+
+        const save: LessonSave = {
+            id,
+            saveName: name,
+            lessons,
+            lastModification: 0
+        }
+
+        saveIds.push(id);
+        saves.push(save);
+        managers.push(createLessonManager(save.lessons, save.id, save.saveName));
+
+        return id;
+    }
+
+    if (saves.length === 0){
+        createSave();
+    }
+
+    let currentManager = $state(managers[0]);
+
+    const switchSave = (id: string) => {
+        const idx = saveIds.findIndex(n => n === id);
+
+        if (idx === -1){
+            return false;
+        }
+
+        currentManager = managers[idx];
+
+        return true;
+    }
+
+    const removeSave = (id: string) => {
+        const idx = saveIds.findIndex(n => n === id);
+
+        if (idx === -1){
+            return false;
+        }
+
+        saveIds.splice(idx, 1);
+        saves.splice(idx, 1);
+        managers.splice(idx, 1);
+
+        localStorage.removeItem(`${SAVE_LESSON_KEY_PREFIX}${id}`);
+
+        if (currentManager.getSaveId() === id){
+            currentManager = managers[idx % saveIds.length];
+        }
+
+        return true;
+    }
+
+    return {
+        getSaveIds: () => saveIds_,
+        getSaveNameForId: (id: string) => managers.find(m => m.getSaveId() === id)?.getSaveName(),
+        getCurrentManager: () => currentManager,
+
+        createSave,
+        switchSave,
+        removeSave,
+    }
+
+}

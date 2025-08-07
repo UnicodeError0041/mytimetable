@@ -1,0 +1,28 @@
+.dialog[open]{
+    position: fixed;
+    margin: auto;
+
+    display: grid;
+    gap: 2rem;
+
+    z-index: 99999;
+
+    background-color: var(--clr-background);
+    color: var(--clr-text);
+
+    border: none;
+    border-radius: 0.3rem;
+
+    filter: var(--drop-shadow-small);
+}
+
+.dialog__buttons{
+    display: flex;
+    margin-left: auto;
+    gap: 1rem;
+}
+
+.dialog::backdrop {
+  background-color: rgba(from hex var(--clr-background), 0.5);
+  backdrop-filter: blur(10px);
+}
