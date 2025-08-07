@@ -76,7 +76,9 @@
     const onTabSwitch = (id: string) => {
         const saveId = id === "add" ? savedLessons.createSave() : id;
 
-        savedLessons.switchSave(saveId);
+        if(saveId){
+            savedLessons.switchSave(saveId);
+        }
     }
 
     const dragOverHandler = (e: DragEvent) => {
@@ -149,19 +151,25 @@
                 </Tooltip>
             </div>
         </div>
-        
-        <div class="editor__timetable-wrapper {isExporting ? "editor__timetable-wrapper--exporting" : ""}">
-            <LessonsTimeTable queriedLessons={shownQueriedLessons} ownLessons={currentSavedLessons} bind:tableState={tableState} imageMode={isExporting} timetableId={id}/>
-        </div>
+        {#if currentManager?.getSaveId() ?? "one" === id}
+            <div class="editor__timetable-wrapper {isExporting ? "editor__timetable-wrapper--exporting" : ""}">
+                <LessonsTimeTable queriedLessons={shownQueriedLessons} ownLessons={currentSavedLessons} bind:tableState={tableState} imageMode={isExporting} timetableId={id}/>
+            </div>
+        {/if}
     </div>
 {/snippet}
 
 {#snippet tabValue(id: string)}
     {#if id === "add"}
-        <Tooltip content="Új órarend készítése" config={{openDelay: 500}}>
-            <div class="icon --fs-h4 ix--add-circle">
-            </div>
-        </Tooltip>
+            <Tooltip content="Új órarend készítése" config={{openDelay: 500}}>
+                {#if savedLessons.getMaxSaveCount() !== savedLessons.getSaveIds().length}
+                    <div class="icon --fs-h4 ix--add-circle">
+                    </div>
+                {:else}
+                    <p class="--warning">Maximum órarendszám elérve</p>
+                {/if}
+            </Tooltip>
+        
     {:else if id === currentSaveId}
         <div class="editor__active-tab">
             <div class="--typewrite">

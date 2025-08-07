@@ -7,11 +7,12 @@ const SAVE_LESSON_IDS_KEY = "saveLessonIds";
 export const SAVE_LESSON_KEY_PREFIX = "save";
 
 export type SavedLessons = {
+    getMaxSaveCount: () => number,
     getSaveIds: () => string[],
     getSaveNameForId: (id: string) => string | undefined,
     getCurrentManager: () => LessonManager,
 
-    createSave: (name?: string, lessons?: LessonData[]) => string,
+    createSave: (name?: string, lessons?: LessonData[]) => string | false,
     switchSave: (id: string) => boolean,
     removeSave: (id: string) => boolean,
 }
@@ -24,6 +25,8 @@ export type LessonSave = {
 }
 
 export function loadSavedLessonsFromLocalStorage(): SavedLessons{
+    const MAX_SAVE_COUNT = 10;
+
     let saveIds = $state(browser ? JSON.parse(localStorage.getItem(SAVE_LESSON_IDS_KEY) ?? "[]") as string[] : []);
 
     let saves = $state(saveIds
@@ -46,6 +49,10 @@ export function loadSavedLessonsFromLocalStorage(): SavedLessons{
     let managers = $state(saves.map(s => createLessonManager(s.lessons, s.id, s.saveName)));
 
     const createSave = (name?: string, lessons?: LessonData[]) => {
+        if(saves.length >= MAX_SAVE_COUNT){
+            return false;
+        }
+
         lessons ??= [];
         name ??= "Új órarend";
 
@@ -104,6 +111,7 @@ export function loadSavedLessonsFromLocalStorage(): SavedLessons{
     }
 
     return {
+        getMaxSaveCount: () => MAX_SAVE_COUNT,
         getSaveIds: () => saveIds_,
         getSaveNameForId: (id: string) => managers.find(m => m.getSaveId() === id)?.getSaveName(),
         getCurrentManager: () => currentManager,
