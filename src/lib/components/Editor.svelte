@@ -151,7 +151,7 @@
                 </Tooltip>
             </div>
         </div>
-        {#if currentManager?.getSaveId() ?? "one" === id}
+        {#if id === currentSaveId}
             <div class="editor__timetable-wrapper {isExporting ? "editor__timetable-wrapper--exporting" : ""}">
                 <LessonsTimeTable queriedLessons={shownQueriedLessons} ownLessons={currentSavedLessons} bind:tableState={tableState} imageMode={isExporting} timetableId={id}/>
             </div>
