@@ -20,6 +20,8 @@
     display: flex;
     margin-left: auto;
     gap: 1rem;
+
+    flex-wrap: wrap;
 }
 
 .dialog::backdrop {

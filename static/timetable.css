@@ -132,6 +132,7 @@
     overflow: hidden;
 
     width: 100%;
+    min-height: 0.6rem;
 }
 
 .lesson-timetable__remove-lesson{

@@ -1,6 +1,6 @@
 import { MD5 } from "object-hash";
 import { fetchLessons } from "./query";
-import type { Lesson, LessonData, Semester } from "./types"
+import { hasTimetableData, type Lesson, type LessonData, type Semester } from "./types"
 import {SvelteMap} from "svelte/reactivity"
 
 type LessonKey = {
@@ -11,7 +11,7 @@ type LessonKey = {
 
 export type LessonAlternatives = {
     getMap: () => Map<string, LessonData[]>,
-    getAlternativesToLesson: (lesson: Lesson) => LessonData[] | undefined,
+    getAlternativesToLesson: (lesson: Lesson) => LessonData[],
     addAlternatives: (subjectCode: string, semester: Semester, courseType?: string) => Promise<void>,
     addAlternativesToLesson: (lesson: Lesson) => Promise<void>,
 }
@@ -39,6 +39,10 @@ export function createLessonAlternatives(): LessonAlternatives{
         // console.log(lessons);
 
         for(const data of lessons){
+            if(!hasTimetableData(data.lesson)){
+                continue
+            }
+
             const key = MD5({subjectCode, semester, courseType: data.lesson.courseType} as LessonKey);
 
             if (map.has(key)){
@@ -59,7 +63,7 @@ export function createLessonAlternatives(): LessonAlternatives{
 
     const addAlternativesToLesson = async (lesson: Lesson) => {
 
-        if (lesson.semester){
+        if (hasTimetableData(lesson) && lesson.semester !== null){
             await addAlternatives(lesson.subjectCode, lesson.semester, lesson.courseType);
         }
 
@@ -69,7 +73,7 @@ export function createLessonAlternatives(): LessonAlternatives{
         const returned = map.get(MD5({subjectCode: lesson.subjectCode, semester: lesson.semester, courseType: lesson.courseType} as LessonKey));
 
         // console.log(returned);
-        return returned;
+        return returned ?? [];
     }
 
     return {

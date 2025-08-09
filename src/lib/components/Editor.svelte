@@ -9,13 +9,13 @@
     import download from 'downloadjs';
 	import Tabs from "./Tabs.svelte";
 	import Tooltip from "./Tooltip.svelte";
-	import type { LessonData } from "$lib/lessons/types";
+	import type { Lesson, LessonData } from "$lib/lessons/types";
 	import LessonDialog from "./LessonDialog.svelte";
 
 
     let deleteTimetableDialogElement: HTMLDialogElement = $state(null!);
 
-    let createLessonDialogElement: HTMLDialogElement = $state(null!);
+    let createLessonDialogOpenHandler: (defaultLesson?: Lesson) => void = $state(null!);
 
     let isExporting = $state(false);
 
@@ -106,6 +106,10 @@
         localStorage.removeItem("draggedLesson");
     }
 
+    const handleNewLesson = () => {
+        createLessonDialogOpenHandler();
+    }
+
 </script>
 
 <svelte:window onkeydown={keydownHandler}/>
@@ -132,7 +136,7 @@
                     <span class={isExporting ? "ix--draw-circle-arc --spinning" : "ix--image"}></span>
                     <p>Mentés képként</p>
                 </button>
-                <button class="icon-text button --pulse-on-hover" onclick={() => createLessonDialogElement.showModal()} disabled={isExporting}>
+                <button class="icon-text button --pulse-on-hover" onclick={handleNewLesson} disabled={isExporting}>
                     <span class="ix--add-document-note"></span>
                     <p>Saját óra hozzáadása</p>
                 </button>
@@ -230,4 +234,4 @@
     </div>
 </dialog>
 
-<LessonDialog bind:dialogElement={createLessonDialogElement} onSave={data => currentManager?.add(data)}/>
+<LessonDialog bind:dialogOpenHandler={createLessonDialogOpenHandler} onSave={data => currentManager?.add(data)} title="Saját óra hozzáadása"/>

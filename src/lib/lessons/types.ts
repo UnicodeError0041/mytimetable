@@ -78,3 +78,30 @@ export function dayOfWeekToString(day: DayOfWeek): string{
 export function lessonDataFromLesson(lesson: Lesson, edited?: boolean): LessonData{
     return {id: MD5(lesson), lesson, edited};
 }
+
+export function getDefaultLesson(): Lesson{
+    return {
+        subjectCode: "",
+        subjectName: "",
+        teacherAndComment: "",
+        courseCode: "", 
+        courseType: "gyakorlat", 
+        day: "h", 
+        detailedTime: null, 
+        startTime: {
+            hour: 8,
+            minute: 0
+        },
+        endTime: {
+            hour: 9,
+            minute: 0,
+        },
+        location: "",
+        semester: null,
+
+    };
+}
+
+export function hasTimetableData(lesson: Lesson): boolean {
+    return lesson.startTime !== null && lesson.endTime !== null && lesson.day !== null;
+}

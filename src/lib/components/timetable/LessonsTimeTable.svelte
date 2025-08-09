@@ -103,7 +103,6 @@
 
         requestAnimationFrame(() => {
             if(e.dataTransfer != null){
-                // console.log($state.snapshot(data));
                 e.dataTransfer.effectAllowed = "copyMove";
                 e.dataTransfer.dropEffect = "none";
 
@@ -112,11 +111,10 @@
             }
 
             const alt = alternativesCtx.getAlternativesToLesson(data.lesson);
-
-            if (alt){
-                alternativeLessons = alt;
-                tableState = "drag";
-            }
+            
+            alternativeLessons = alt;
+            tableState = "drag";
+            
         })
         
     }
@@ -188,9 +186,13 @@
     {#if data.source === "saved"}
         {#snippet savedLessonTooltipContent()}
 
-            {#if !data.lessonData.edited}
-                <p>Ragadj meg az áthelyezéshez!</p> 
-            {/if}
+            <p>
+                {#if !data.lessonData.edited}
+                    Ragadj meg az áthelyezéshez!
+                {:else}
+                    Ez egy szerkesztett óra
+                {/if}
+            </p>
             <Tooltip content="Óra törlése">
                 <button
                     aria-label="óra törlése"

@@ -1,39 +1,16 @@
 <script lang="ts">
-	import { dayOfWeekToString, type DayOfWeek, type Lesson, type Time } from "$lib/lessons/types";
+	import { dayOfWeekToString, getDefaultLesson, type DayOfWeek, type Lesson, type Time } from "$lib/lessons/types";
 	import Combobox from "./Combobox.svelte";
 	import TimeInput from "./TimeInput.svelte";
 
 
     type Props = {
-        lesson: Lesson | null,
+        lesson?: Lesson,
     };
 
-    const defaultValue: Lesson = $state({
-        subjectCode: "",
-        subjectName: "",
-        teacherAndComment: "",
-        courseCode: "", 
-        courseType: "gyakorlat", 
-        day: "h", 
-        detailedTime: null, 
-        startTime: {
-            hour: 8,
-            minute: 0
-        },
-        endTime: {
-            hour: 9,
-            minute: 0,
-        },
-        location: "",
-        semester: null,
-
-    });
+    const defaultValue: Lesson = getDefaultLesson();
 
     let {lesson=$bindable(defaultValue)}:Props = $props();
-
-    if (lesson === null){
-        lesson = defaultValue;
-    }
 
 </script>
 

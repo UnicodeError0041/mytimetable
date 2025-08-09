@@ -50,7 +50,7 @@
         <input class="text-input text-input--digit text-input--secondary" {...pinInput.inputs[2]} value={value === undefined ? undefined : value[2]}/>
         <input class="text-input text-input--digit text-input--secondary" {...pinInput.inputs[3]} value={value === undefined ? undefined : value[3]}/>
     </div>
-    {#if !isValid}
+    {#if !isValid && pinInput.value.length === 4}
         <p class="--fs-small --error">Invalid idő</p>
     {/if}
 </div>

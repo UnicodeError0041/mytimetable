@@ -1,14 +1,23 @@
 <script lang="ts">
-	import { lessonDataFromLesson, timeToNumber, type Lesson, type LessonData } from "$lib/lessons/types";
+	import { getDefaultLesson, lessonDataFromLesson, timeToNumber, type Lesson, type LessonData } from "$lib/lessons/types";
 	import LessonInput from "./inputs/LessonInput.svelte";
 
     type Props = {
-        lesson?: Lesson | null,
-        dialogElement: HTMLDialogElement,
-        onSave: (lesson: LessonData) => void
+        dialogOpenHandler: (defaultLesson?: Lesson) => void,
+        onSave: (lesson: LessonData) => void,
+        title?: string,
     }
 
-    let {lesson = null, dialogElement=$bindable(), onSave}: Props = $props();
+    let {dialogOpenHandler=$bindable(), onSave, title="Óra megadása"}: Props = $props();
+
+    let dialogElement: HTMLDialogElement = $state(null!);
+    
+    let lesson: Lesson = $state(getDefaultLesson());
+
+    dialogOpenHandler = (defaultLesson?: Lesson) => {
+        lesson = defaultLesson ?? getDefaultLesson();
+        dialogElement.showModal();
+    }
 
     const isValidLesson = (l: Lesson) => 
         l.subjectName !== "" && 
@@ -16,16 +25,20 @@
         l.day !== null && 
         l.courseType !== "";
 
-    const lessonSaveHandler = (l: Lesson | null) => {
-        if (l === null || !isValidLesson(l)){
+    const lessonSaveHandler = () => {
+        if (lesson === undefined || !isValidLesson(lesson)){
             return;
         }
   
-        onSave(lessonDataFromLesson(l, true));
+        onSave(lessonDataFromLesson(lesson, true));
         dialogElement.close();
     }
 
-    const isInvalid = $derived(lesson === null || !isValidLesson(lesson));
+    const closeHandler = () => {
+        dialogElement.close();
+    }
+
+    const isInvalid = $derived(lesson === undefined || !isValidLesson(lesson));
 
 </script>
 
@@ -33,17 +46,24 @@
     class="dialog"
     bind:this={dialogElement}
 >
-    <div>
-        <LessonInput bind:lesson={lesson}/>
-    </div>
+
+    <p class="--fs-h3">{title}</p>
+    <LessonInput bind:lesson={lesson}/>
+
     <div class="dialog__buttons">
+        {#if lesson.startTime !== null && lesson.endTime !== null && lesson.startTime && lesson.endTime && timeToNumber(lesson.startTime) >= timeToNumber(lesson.endTime)}
+            <div class="icon-text --error">
+                <span class="ix--warning-rhomb"></span>
+                <p>Az óra kezdete a vége előtt kell legyen</p>
+            </div>
+        {/if}
         <button class="button button--primary-filled icon-text --pulse-on-hover" 
-            onclick={() => lessonSaveHandler(lesson)} 
+            onclick={lessonSaveHandler} 
             disabled={isInvalid}
         >
             <span class="ix--disk"></span>
             <p>Mentés</p>
         </button>
-        <button class="button --pulse-on-hover" onclick={() => dialogElement.close()}>Mégsem</button>
+        <button class="button --pulse-on-hover" onclick={closeHandler}>Mégsem</button>
     </div>
 </dialog>
