@@ -13,29 +13,30 @@
 
     const isTimeValid = (time: Time) => (0 <= time.hour && time.hour <= 23 && 0 <= time.minute && time.minute <= 59);
 
-    let isValid = $state(time === undefined || isTimeValid(time));
+    let isValid = $derived(time === undefined || isTimeValid(time));
 
-    const value = time === undefined ? undefined : timeToString(time).substring(0,2) + timeToString(time).substring(3,5);
+    let textValue = $state("");
+
+    const value = $derived(time === undefined ? textValue : timeToString(time).substring(0,2) + timeToString(time).substring(3,5));
 
     const pinInput = new PinInput({
         type:"numeric",
-        value,
+        value: () => value,
         onValueChange: val => {
+            textValue = val;
+
             if(val.length !== 4){
                 time = undefined;
-                isValid = false;
                 return;
             }
 
             const newTime = {hour: Number(val.substring(0, 2)), minute: Number(val.substring(2, 4))};
 
             if (!isTimeValid(newTime)){
-                isValid = false;
                 return;
             }
 
             time = newTime;
-            isValid = true;
         },
     });
 

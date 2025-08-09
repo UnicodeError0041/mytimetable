@@ -14,7 +14,7 @@
 
     const combobox = new Combobox<T>({
         onValueChange: value => value !== undefined ? selected = value : "",
-        value:selected,
+        value:() => selected,
 
     });
 

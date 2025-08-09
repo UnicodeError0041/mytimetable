@@ -8,6 +8,7 @@
 	import { SYMBOL_SAVED_LESSONS } from "$lib/lessons/lessonManager.svelte";
 	import { SYMBOL_LESSON_ALTERNATIVES, type LessonAlternatives } from "$lib/lessons/lessonAlternatives.svelte";
 	import Tooltip from "../Tooltip.svelte";
+	import LessonDialog from "../LessonDialog.svelte";
 
 
     type Props = {
@@ -29,6 +30,10 @@
 
 
     let alternativeLessons: LessonData[] = $state([]);
+
+    let editLessonDialogOpenHandler: (defaultLesson?: LessonType) => void = $state(null!);
+
+    let editedLesson: LessonData | undefined = $state();
 
 
     const sourcedLessons = $derived.by(() => {
@@ -178,6 +183,15 @@
         localStorage.removeItem("draggedLesson");
     }
 
+    const editStartHandler = (data: LessonData) => {
+        editedLesson = data;
+        editLessonDialogOpenHandler(structuredClone($state.snapshot(data.lesson)));
+    }
+
+    const editEndHandler = (data: LessonData) => {
+        if(editedLesson?.id) currentManager.update(editedLesson?.id, data);
+    }
+
 </script>
 
 {#snippet element(data: SourcedLessonData)}
@@ -203,14 +217,15 @@
                 </button>
             </Tooltip>
 
-            <!-- <Tooltip content="Óra szerkesztése">
+            <Tooltip content="Óra szerkesztése">
                 <button
                     aria-label="óra szerkesztése"
                     class="button button--icon --fs-h4 --secondary --pulse-on-hover"
+                    onclick={() => editStartHandler(data.lessonData)}
                 >
                     <span class="ix--edit-document"></span>
                 </button>
-            </Tooltip> -->
+            </Tooltip>
         {/snippet}
 
         <Lesson lesson={data.lessonData.lesson} classes="lesson--saved --pulse-on-hover {type ? "lesson--lecture" : ""}"
@@ -219,7 +234,7 @@
             {
                 draggable: "true", 
                 ondragstart: (e: DragEvent) => dragStartHandler(e, data.lessonData), 
-                ondragend: dragEndHandler
+                ondragend: dragEndHandler,
             }}
         />
     {:else if data.source === "queried"}
@@ -268,4 +283,5 @@
         <span class="ix--trashcan"></span>
         
     </div>
+    <LessonDialog title="Óra szerkesztése" bind:dialogOpenHandler={editLessonDialogOpenHandler} onSave={editEndHandler}/>
 </div>

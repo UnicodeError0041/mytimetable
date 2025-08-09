@@ -11,7 +11,6 @@
     const defaultValue: Lesson = getDefaultLesson();
 
     let {lesson=$bindable(defaultValue)}:Props = $props();
-
 </script>
 
 <div class="lesson-input">
