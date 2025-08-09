@@ -162,9 +162,9 @@
     filter: var(--drop-shadow-medium);
 
     transition: 
-        translate 300ms ease-out,
-        scale 100ms ease-out,
-        filter 100ms ease-out;
+        translate var(--to-300ms)ease-out,
+        scale var(--to-100ms)ease-out,
+        filter var(--to-100ms)ease-out;
     
     z-index: 99999;
 }

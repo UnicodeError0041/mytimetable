@@ -195,7 +195,8 @@
 </script>
 
 {#snippet element(data: SourcedLessonData)}
-    {@const type = data.lessonData.lesson.courseType === "előadás"}
+    {@const isLecture = data.lessonData.lesson.courseType === "előadás"}
+    {@const isEdited = data.lessonData.edited === true}
 
     {#if data.source === "saved"}
         {#snippet savedLessonTooltipContent()}
@@ -228,7 +229,7 @@
             </Tooltip>
         {/snippet}
 
-        <Lesson lesson={data.lessonData.lesson} classes="lesson--saved --pulse-on-hover {type ? "lesson--lecture" : ""}"
+        <Lesson lesson={data.lessonData.lesson} {isEdited} classes="lesson--saved --pulse-on-hover {isLecture ? "lesson--lecture" : ""}"
             extraTooltipElement={savedLessonTooltipContent}
             attrs={
             {
@@ -238,7 +239,7 @@
             }}
         />
     {:else if data.source === "queried"}
-        <Lesson lesson={data.lessonData.lesson} classes="lesson--queried --pulse-on-hover {type ? "lesson--lecture" : ""}"
+        <Lesson lesson={data.lessonData.lesson} {isEdited} classes="lesson--queried --pulse-on-hover {isLecture ? "lesson--lecture" : ""}"
             extraTooltipElement="Kattints a hozzáadáshoz!"
             attrs={
             {
@@ -246,7 +247,7 @@
             }}
         />
     {:else if data.source === "alternative"}
-        <Lesson lesson={data.lessonData.lesson} classes="lesson--alternative --pulse {type ? "lesson--lecture" : ""}"
+        <Lesson lesson={data.lessonData.lesson} {isEdited} classes="lesson--alternative --pulse {isLecture ? "lesson--lecture" : ""}"
             triggerType="both"
             extraTooltipElement="Dobd ide az órát az áthelyezéshez!"   
             attrs={

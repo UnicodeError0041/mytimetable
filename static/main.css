@@ -82,6 +82,24 @@ h5, .--fs-h5 {font-size: var(--fs-h5); /* 21.28px */}
 
 small, .--fs-small {font-size: var(--fs-small); /* 12px */}
 
+/* Timeouts for animations*/
+
+:root{
+  --to-100ms: 100ms;
+  --to-300ms: 300ms;
+  --to-750ms: 750ms;
+  --to-1000ms: 1000ms;
+}
+
+@media (prefers-reduced-motion: reduce){
+  :root{
+    --to-100ms: 0ms;
+    --to-300ms: 0ms;
+    --to-750ms: 0ms;
+    --to-1000ms: 0ms;
+  }
+}
+
 /* Default setting */
 
 html{
@@ -95,13 +113,33 @@ body{
   color: var(--clr-text);
   --body-padding: 4rem;
   padding: var(--body-padding);
+}
 
-  padding-bottom: 20rem;
+a{
+  color: var(--clr-primary);
+
+  transition: color var(--to-300ms) ease-out;
+
+  &:visited{
+    color: var(--clr-primary-dark);
+  }
+
+  &:hover, &:focus{
+    color: var(--clr-primary-light);
+  }
 }
 
 main{
   display: grid;
   gap: 6rem;
+}
+
+footer {
+  display: grid;
+  gap: 1rem;
+  justify-items: center;
+
+  padding-top: 4rem;
 }
 
 /* Helper classes */
@@ -158,13 +196,14 @@ main{
   border-radius: 100vmax;
 }
 
+@media (prefers-reduced-motion: no-preference){
+  .--pulse::before{
+    animation: pulse var(--to-1000ms) ease-out 0s infinite normal forwards;
+  }
 
-.--pulse::before{
-    animation: pulse 1000ms ease-out 0s infinite normal forwards;
-}
-
-.--pulse-on-hover:hover:not(:disabled)::before{
-    animation: pulse 1000ms ease-out 0s normal forwards;
+  .--pulse-on-hover:hover:not(:disabled)::before{
+      animation: pulse var(--to-1000ms) ease-out 0s normal forwards;
+  }
 }
 
 @keyframes pulse {
@@ -201,8 +240,8 @@ main{
   background-color: var(--clr-background);
 
   animation:
-    /* blink 750ms step-end infinite, */
-    reveal 1000ms steps(20, end) forwards;
+    /* blink var(--to-750ms)step-end infinite, */
+    reveal var(--to-1000ms)steps(20, end) forwards;
 }
 
 
@@ -218,7 +257,7 @@ main{
 }
 
 .--spinning{
-  animation: spin 750ms ease-out 0s infinite normal forwards;
+  animation: spin var(--to-750ms)ease-out 0s infinite normal forwards;
 }
 
 @keyframes spin {

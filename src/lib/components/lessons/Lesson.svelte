@@ -7,13 +7,14 @@
 
     type Props = {
         lesson: Lesson
+        isEdited?: boolean
         classes? : string
         attrs?: HTMLAttributes<HTMLElement>
         triggerType?: "hover" | "dragover" | "both"
         extraTooltipElement?: string | Snippet
     }
 
-    const {lesson, classes = "", attrs = {}, triggerType = "hover", extraTooltipElement}:Props = $props();
+    const {lesson, isEdited=false, classes = "", attrs = {}, triggerType = "hover", extraTooltipElement}:Props = $props();
 
 
     const config: TooltipProps = {
@@ -55,19 +56,19 @@
             <div class="lesson__tooltip-data-name">Helyszín: </div>
             <div class="lesson__tooltip-data-value">{lesson.location}</div>
         </div>
-        {#if lesson.detailedTime == null && lesson.day !== null}
+        {#if (lesson.detailedTime == null || isEdited) && lesson.day !== null}
             <div class="lesson__tooltip-data">
                 <div class="lesson__tooltip-data-name">Nap: </div>
                 <div class="lesson__tooltip-data-value --capitalize">{dayOfWeekToString(lesson.day)}</div>
             </div>
         {/if}
-        {#if lesson.detailedTime == null && lesson.startTime !== null}
+        {#if (lesson.detailedTime == null || isEdited) && lesson.startTime !== null}
             <div class="lesson__tooltip-data">
                 <div class="lesson__tooltip-data-name">Kezdés idő: </div>
                 <div class="lesson__tooltip-data-value">{timeToString(lesson.startTime)}</div>
             </div>
         {/if}
-        {#if lesson.detailedTime == null && lesson.endTime !== null}
+        {#if (lesson.detailedTime == null || isEdited) && lesson.endTime !== null}
             <div class="lesson__tooltip-data">
                 <div class="lesson__tooltip-data-name">Befejezés idő: </div>
                 <div class="lesson__tooltip-data-value">{timeToString(lesson.endTime)}</div>
@@ -75,7 +76,7 @@
         {/if}
         {#if lesson.detailedTime !== null}
              <div class="lesson__tooltip-data">
-                <div class="lesson__tooltip-data-name">Idő: </div>
+                <div class="lesson__tooltip-data-name">{isEdited ? "Eredeti idő" : "Idő"}:</div>
                 <div class="lesson__tooltip-data-value">{lesson.detailedTime}</div>
             </div>
         {/if}
@@ -85,7 +86,7 @@
                 <div class="lesson__tooltip-data-value">{semesterToString(lesson.semester)}</div>
             </div>
         {/if}
-        {#if extraTooltipElement != null}
+        {#if extraTooltipElement !== undefined}
             <div class="lesson__tooltip-extra-content">
                 {#if typeof extraTooltipElement === "string"}
                     <p class="--fs-small">{extraTooltipElement}</p>
@@ -112,4 +113,9 @@
             {lesson.courseType}
         </p>
     </div>
+    {#if isEdited}
+        <div class="icon lesson__edited-icon">
+            <span class="ix--edit-document"></span>
+        </div>
+    {/if}
 </Tooltip>

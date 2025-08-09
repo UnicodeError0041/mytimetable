@@ -33,6 +33,12 @@
     border-radius:100vmax;
 }
 
+.lesson__edited-icon{
+    position: absolute;
+    right: 0.3rem;
+    bottom: 0rem;
+}
+
 .lesson--lecture.lesson--lecture{
     --clr-lesson: var(--clr-primary);
 }
@@ -103,10 +109,15 @@
 
 .timetable__element:has(.lesson){
     border-radius: 0.3rem;
+    opacity: 1;
     transition: 
-    scale 100ms ease-out,
-    filter 100ms ease-out
-    ;
+        opacity var(--to-300ms) ease-out,
+        scale var(--to-100ms) ease-out,
+        filter var(--to-100ms) ease-out;
+    
+    @starting-style{
+        opacity: 0;
+    }
 }
 
 .timetable__element:has(.lesson--alternative){
