@@ -31,9 +31,7 @@
 
     const currentSaveId = $derived(currentManager?.getSaveId() ?? "");
 
-    const query = $derived(getContext<QueryData>(SYMBOL_LESSONS_QUERY).query);
-
-    const queriedLessons = $derived((query?.isFetched && query.data) ? query.data : []);
+    const queriedLessons = $derived(getContext<QueryData>(SYMBOL_LESSONS_QUERY).queriedLessons ?? []);
 
     const shownQueriedLessons = $derived(showQueriedLessons ? queriedLessons : []);
 

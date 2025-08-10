@@ -1,0 +1,32 @@
+.collapsible__header{
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: space-between;
+
+    height: 3rem;
+}
+
+.collapsible__chevron{
+    display: grid;
+}
+
+.collapsible__content-holder{
+    height: 0;
+    transition: height var(--to-300ms) ease-out;
+    overflow: hidden;
+}
+
+.collapsible__content-holder[data-state="open"]{
+    height: max-content;
+}
+
+.collapsible__content{
+    translate: 0 -100%;
+
+    transition: translate var(--to-300ms) ease-out;
+}
+
+.collapsible__content-holder[data-state="open"] > .collapsible__content{
+    translate: 0 0;
+}

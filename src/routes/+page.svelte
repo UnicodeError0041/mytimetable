@@ -6,14 +6,13 @@
 	import { SYMBOL_SAVED_LESSONS} from '$lib/lessons/lessonManager.svelte';
 	import { SYMBOL_LESSONS_QUERY, type QueryData } from '$lib/lessons/query';
 	import { loadSavedLessonsFromLocalStorage, type SavedLessons } from '$lib/lessons/savedLessons.svelte';
-	import type { Lesson } from '$lib/lessons/types';
 	import {setContext } from 'svelte';
 
 	const savedLessons = loadSavedLessonsFromLocalStorage();
     
     setContext<SavedLessons>(SYMBOL_SAVED_LESSONS, savedLessons);
 
-    let query: QueryData = $state({query: null});
+    let query: QueryData = $state({queriedLessons: null});
     
     setContext<QueryData>(SYMBOL_LESSONS_QUERY, query);
 

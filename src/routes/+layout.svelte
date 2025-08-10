@@ -25,7 +25,7 @@
     {@render children()}
   </main>
   <footer>
-    <p>Az órák az ELTE Tanulmányi Osztály adatbázisából származnak</p>
+    <p>Az adatok az ELTE Tanulmányi Osztály adatbázisából származnak</p>
     <div class="icon --fs-h3"><a class="ix--github-logo" target="_blank" href="https://github.com/UnicodeError0041/mytimetable" aria-label="GitHub"></a></div>
   </footer>
   <SvelteQueryDevtools />

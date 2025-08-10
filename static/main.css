@@ -163,6 +163,10 @@ footer {
   opacity: 0;
 }
 
+.--half-transparent{
+  opacity: 50%;
+}
+
 .--capitalize{
   text-transform: capitalize;
 }

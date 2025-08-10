@@ -16,7 +16,7 @@ const URL = "/api/lessonQuery";
 export const SYMBOL_LESSONS_QUERY = Symbol("lessonsQuery");
 
 export type QueryData = {
-    query: QueryObserverResult<LessonData[], Error> | null
+    queriedLessons: LessonData[] | null
 }
 
 export async function fetchLessons(semester:Semester, keyword:string, mode: QueryMode):Promise<LessonData[]> {
