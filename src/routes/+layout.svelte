@@ -4,6 +4,12 @@
   import { SvelteQueryDevtools } from '@tanstack/svelte-query-devtools'
   import { PersistQueryClientProvider } from '@tanstack/svelte-query-persist-client'
   import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
+  import { injectAnalytics } from '@vercel/analytics/sveltekit'
+  import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
+
+  injectSpeedInsights();
+
+  injectAnalytics();
 
   let {children} = $props();
   
@@ -27,6 +33,7 @@
   <footer>
     <p>Az adatok az ELTE Tanulmányi Osztály adatbázisából származnak</p>
     <div class="icon --fs-h3"><a class="ix--github-logo" target="_blank" href="https://github.com/UnicodeError0041/mytimetable" aria-label="GitHub"></a></div>
+    <a href="/privacy">Adatvédelem</a>
   </footer>
   <SvelteQueryDevtools />
 </PersistQueryClientProvider>
