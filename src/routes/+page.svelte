@@ -31,10 +31,6 @@
 			const id = savedLessons.createSave(`Velem megosztott: ${lessonSave.saveName}`, lessonSave.lessons);
 
 			if (id) savedLessons.switchSave(id);
-
-			page.url.searchParams.delete('data');
-
-			setTimeout(() => replaceState(page.url, {}), 0);
 		}
 
 	}
