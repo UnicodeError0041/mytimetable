@@ -87,7 +87,7 @@
             url.searchParams.delete('data');
             url.searchParams.append('data', encodeURI(currentManager?.getLessonSave() as LessonSave));
 
-            exportUrl = url.toString();
+            exportUrl = `Helló! Nézd meg a ${currentManager?.getSaveName()} órarendemet itt: ${url.toString()}`;
 
             urlExportDialogElement.showModal();
 
@@ -277,10 +277,10 @@
     class="dialog"
     bind:this={urlExportDialogElement}
 >
-    <p class="--fs-h5">A "{currentManager?.getSaveName()}" nevű órarendhez tartozó URL:</p>
-    <a href={exportUrl} class="url">
+    <p class="--fs-h5">A "{currentManager?.getSaveName()}" nevű órarendhez generált URL:</p>
+    <p class="url">
         {exportUrl}
-    </a>
+    </p>
     <div class="dialog__buttons">
         <button class="button icon-text button--primary-filled --pulse-on-hover" onclick={() => {urlExportDialogElement.close(); navigator.clipboard.writeText(exportUrl);}}>
             <span class="ix--copy"></span>
