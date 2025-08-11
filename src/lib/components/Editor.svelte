@@ -160,20 +160,23 @@
                         <p>Találatok {showQueriedLessons ? "elrejtése" : "megjelenítése"}</p>
                     </button>
                 {/if}
-                <button class="icon-text button --pulse-on-hover" onclick={imageExport} disabled={isExporting}>
-                    <span class={isImageExporting ? isExportDone ? "ix--single-check --bounce-in" : "ix--draw-circle-arc --spinning" : "ix--image"}></span>
-                    <p>Exportálás képként</p>
-                </button>
-                <button class="icon-text button --pulse-on-hover" onclick={URLExport} disabled={isExporting}>
-                    <span class={isURLExporting ? isExportDone ? "ix--single-check --bounce-in" : "ix--draw-circle-arc --spinning" : "ix--link"}></span>
-                    <p>
-                        {#if isExportDone}
-                            URL vágólapra másolva
-                        {:else}
-                            Exportálás URL-ként
-                        {/if}
-                    </p>
-                </button>
+
+                {#if currentSavedLessons.length !== 0}
+                    <button class="icon-text button --pulse-on-hover" onclick={imageExport} disabled={isExporting}>
+                        <span class={isImageExporting ? isExportDone ? "ix--single-check --bounce-in" : "ix--draw-circle-arc --spinning" : "ix--image"}></span>
+                        <p>Exportálás képként</p>
+                    </button>
+                    <button class="icon-text button --pulse-on-hover" onclick={URLExport} disabled={isExporting}>
+                        <span class={isURLExporting ? isExportDone ? "ix--single-check --bounce-in" : "ix--draw-circle-arc --spinning" : "ix--link"}></span>
+                        <p>
+                            {#if isExportDone}
+                                URL vágólapra másolva
+                            {:else}
+                                Exportálás URL-ként
+                            {/if}
+                        </p>
+                    </button>
+                {/if}
                 <button class="icon-text button --pulse-on-hover" onclick={handleNewLesson} disabled={isExporting}>
                     <span class="ix--add-document-note"></span>
                     <p>Saját óra hozzáadása</p>
