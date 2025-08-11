@@ -2,6 +2,7 @@ import { MODE, SEMESTER, KEYWORD } from '$lib/lessons/query';
 import {JSDOM} from "jsdom";
 import type { RequestHandler } from "@sveltejs/kit";
 import { semesterFromString, timeFromString, type DayOfWeek, type Lesson, type Time } from '$lib/lessons/types';
+import { timesFromDetailedTime } from '$lib/lessons/encode';
 
 const URL = "https://tanrend.elte.hu/tanrendnavigation.php";
 
@@ -18,21 +19,7 @@ export const GET: RequestHandler = async ({ url }) => {
 
     for(const row of html.querySelectorAll("tbody>tr")){
         const detailedTime = row.childNodes[0].textContent;
-        const cell1Data = detailedTime?.split(" ");
-
-        let day: DayOfWeek | null = null;
-
-        let startTime: Time | null = null;
-        let endTime: Time | null = null;
-
-        if (cell1Data && cell1Data[1].includes("-")){
-            day = cell1Data[0].toLowerCase()[0] as DayOfWeek;
-
-            const [startTimeStr, endTimeStr] = cell1Data[1].split("-",2);
-
-            startTime = timeFromString(startTimeStr);
-            endTime = timeFromString(endTimeStr);
-        }
+        const {startTime, endTime, day} = timesFromDetailedTime(detailedTime);
 
 
         const cell2Data = row.childNodes[1].textContent?.split(" ") as string[];

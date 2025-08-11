@@ -45,6 +45,7 @@
 		"downloadjs": "^1.4.7",
 		"html-to-image": "^1.11.13",
 		"jsdom": "^26.1.0",
+		"jsoncrush": "^1.1.8",
 		"melt": "^0.38.0",
 		"object-hash": "^3.0.0",
 		"uuid": "^11.1.0"

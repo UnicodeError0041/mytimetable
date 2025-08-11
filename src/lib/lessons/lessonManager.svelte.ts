@@ -12,9 +12,10 @@ type Command = {
 export const SYMBOL_SAVED_LESSONS = Symbol("lessonManager");
 
 export type LessonsManager = {
-    getSaveId: () => string;
-    getSaveName: () => string;
-    setSaveName: (name: string) => void;
+    getSaveId: () => string,
+    getSaveName: () => string,
+    setSaveName: (name: string) => void,
+    getLessonSave: () => LessonSave | undefined,
 
     getLessons: () => LessonData[],
     canUndo: () => boolean,
@@ -62,6 +63,14 @@ export function createLessonManager(lessons_: LessonData[], saveId: string, save
     }
 
     saveLessons();
+
+    const getLessonSave = () => {
+        if(!browser){
+            return;
+        }
+
+        return JSON.parse(localStorage.getItem(`${SAVE_LESSON_KEY_PREFIX}${saveId}`) ?? "") as LessonSave
+    }
 
     const addLessonCommand = (lesson: LessonData) => (
         lessons.some(l => l.id === lesson.id) ?
@@ -153,6 +162,7 @@ export function createLessonManager(lessons_: LessonData[], saveId: string, save
         getSaveId: () => saveId,
         getSaveName: () => saveName,
         setSaveName: (name: string) => {saveName = name; saveLessons()},
+        getLessonSave,
 
         getLessons: () => lessons,
         canUndo: () => canUndo,

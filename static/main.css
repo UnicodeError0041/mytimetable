@@ -261,7 +261,7 @@ footer {
 }
 
 .--spinning{
-  animation: spin var(--to-750ms)ease-out 0s infinite normal forwards;
+  animation: spin var(--to-750ms) ease-out 0s infinite normal forwards;
 }
 
 @keyframes spin {
@@ -271,5 +271,19 @@ footer {
 
   100% {
     rotate: 360deg;
+  }
+}
+
+.--bounce-in{
+  animation: bounce-in var(--to-300ms) cubic-bezier(0.42, 0, 0.26, 2.41) 1 normal forwards;
+}
+
+@keyframes bounce-in{
+  0% {
+    scale: 0;
+  }
+
+  100% {
+    scale: 100%;
   }
 }

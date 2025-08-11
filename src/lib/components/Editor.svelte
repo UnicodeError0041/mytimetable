@@ -2,7 +2,7 @@
 	import { browser } from "$app/environment";
 	import { SYMBOL_SAVED_LESSONS } from "$lib/lessons/lessonManager.svelte";
 	import { type QueryData, SYMBOL_LESSONS_QUERY } from "$lib/lessons/query";
-	import type { SavedLessons } from "$lib/lessons/savedLessons.svelte";
+	import type { LessonSave, SavedLessons } from "$lib/lessons/savedLessons.svelte";
 	import { getContext } from "svelte";
 	import LessonsTimeTable from "./timetable/LessonsTimeTable.svelte";
     import {toPng} from "html-to-image"
@@ -11,13 +11,19 @@
 	import Tooltip from "./Tooltip.svelte";
 	import type { Lesson, LessonData } from "$lib/lessons/types";
 	import LessonDialog from "./LessonDialog.svelte";
+	import { decodeURI, encodeURI } from "$lib/lessons/encode";
 
 
     let deleteTimetableDialogElement: HTMLDialogElement = $state(null!);
 
     let createLessonDialogOpenHandler: (defaultLesson?: Lesson) => void = $state(null!);
 
-    let isExporting = $state(false);
+    let isImageExporting = $state(false);
+    let isURLExporting = $state(false);
+
+    let isExportDone = $state(false);
+
+    const isExporting = $derived(isImageExporting || isURLExporting);
 
     let showQueriedLessons = $state(true);
 
@@ -57,14 +63,33 @@
     }
 
     const imageExport = () => {
-        isExporting = true;
+        isImageExporting = true;
 
         setTimeout(async () => {
             let dataUrl = await toPng(document.querySelector(`[data-lesson-timetable="${currentManager?.getSaveId()}"]`) as HTMLElement, {width: 1920});
             download(dataUrl, `${currentManager?.getSaveName()}.png`, "image/png");
-            isExporting = false;
+            isExportDone = true;
+
+            setTimeout(() => {isExportDone = false; isImageExporting = false;}, 1000);
         }, 0);
 
+    }
+
+    const URLExport = () => {
+        isURLExporting = true;
+
+        setTimeout(async () => {
+            const url = new URL(window.location.toString());
+
+            url.searchParams.delete('data');
+            url.searchParams.append('data', encodeURI(currentManager?.getLessonSave() as LessonSave));
+
+            await navigator.clipboard.writeText(url.toString());
+
+            isExportDone = true;
+            
+            setTimeout(() => {isExportDone = false; isURLExporting = false;}, 1000);
+        }, 0);
     }
 
     const deleteSave = () => {
@@ -131,8 +156,18 @@
                     </button>
                 {/if}
                 <button class="icon-text button --pulse-on-hover" onclick={imageExport} disabled={isExporting}>
-                    <span class={isExporting ? "ix--draw-circle-arc --spinning" : "ix--image"}></span>
-                    <p>Mentés képként</p>
+                    <span class={isImageExporting ? isExportDone ? "ix--single-check --bounce-in" : "ix--draw-circle-arc --spinning" : "ix--image"}></span>
+                    <p>Exportálás képként</p>
+                </button>
+                <button class="icon-text button --pulse-on-hover" onclick={URLExport} disabled={isExporting}>
+                    <span class={isURLExporting ? isExportDone ? "ix--single-check --bounce-in" : "ix--draw-circle-arc --spinning" : "ix--link"}></span>
+                    <p>
+                        {#if isExportDone}
+                            URL vágólapra másolva
+                        {:else}
+                            Exportálás URL-ként
+                        {/if}
+                    </p>
                 </button>
                 <button class="icon-text button --pulse-on-hover" onclick={handleNewLesson} disabled={isExporting}>
                     <span class="ix--add-document-note"></span>
@@ -142,20 +177,20 @@
 
             <div>
                 <Tooltip content="Visszavonás">
-                    <button aria-label="visszavonás" class="button button--icon --pulse-on-hover --fs-h5" disabled={!canUndo || isExporting} onclick={() => currentManager?.undo()}>
+                    <button aria-label="visszavonás" class="button button--icon --pulse-on-hover --fs-h5" disabled={!canUndo || isImageExporting} onclick={() => currentManager?.undo()}>
                         <div class="ix--undo"></div>
                     </button>
                 </Tooltip>
                 <Tooltip content="Újracsinálás">
-                    <button aria-label="újracsinálás" class="button button--icon --pulse-on-hover --fs-h5" disabled={!canRedo || isExporting} onclick={() => currentManager?.redo()}>
+                    <button aria-label="újracsinálás" class="button button--icon --pulse-on-hover --fs-h5" disabled={!canRedo || isImageExporting} onclick={() => currentManager?.redo()}>
                         <div class="ix--redo"></div>
                     </button>
                 </Tooltip>
             </div>
         </div>
         {#if id === currentSaveId}
-            <div class="editor__timetable-wrapper {isExporting ? "editor__timetable-wrapper--exporting" : ""}">
-                <LessonsTimeTable queriedLessons={shownQueriedLessons} ownLessons={currentSavedLessons} bind:tableState={tableState} imageMode={isExporting} timetableId={id}/>
+            <div class="editor__timetable-wrapper {isImageExporting ? "editor__timetable-wrapper--exporting" : ""}">
+                <LessonsTimeTable queriedLessons={shownQueriedLessons} ownLessons={currentSavedLessons} bind:tableState={tableState} imageMode={isImageExporting} timetableId={id}/>
             </div>
         {/if}
     </div>
@@ -181,12 +216,13 @@
                     contenteditable="true"
                     defaultValue={currentManager?.getSaveName()}
                     onchange={e => currentManager?.setSaveName(e.currentTarget.value)}
-                    disabled={isExporting}
+                    disabled={isImageExporting}
+                    onkeydown={e => e.stopPropagation()}
                 />
             </div>
             {#if savedLessons.getSaveIds().length > 1 }
                 <Tooltip content="Órarend törlése">
-                    <button class="button button--icon --pulse-on-hover --error" aria-label="Órarend törlése" onclick={deleteSave} disabled={isExporting}>
+                    <button class="button button--icon --pulse-on-hover --error" aria-label="Órarend törlése" onclick={deleteSave} disabled={isImageExporting}>
                         <div class="ix--trashcan"></div>
                     </button>
                 </Tooltip>
