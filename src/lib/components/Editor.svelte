@@ -15,6 +15,9 @@
 
 
     let deleteTimetableDialogElement: HTMLDialogElement = $state(null!);
+    let urlExportDialogElement: HTMLDialogElement = $state(null!);
+
+    let exportUrl = $state("");
 
     let createLessonDialogOpenHandler: (defaultLesson?: Lesson) => void = $state(null!);
 
@@ -84,7 +87,9 @@
             url.searchParams.delete('data');
             url.searchParams.append('data', encodeURI(currentManager?.getLessonSave() as LessonSave));
 
-            await navigator.clipboard.writeText(url.toString());
+            exportUrl = url.toString();
+
+            urlExportDialogElement.showModal();
 
             isExportDone = true;
             
@@ -265,6 +270,23 @@
     <div class="dialog__buttons">
         <button class="button --pulse-on-hover --error" onclick={() => {deleteTimetableDialogElement.close(); savedLessons.removeSave(currentSaveId)}}>Törlés</button>
         <button class="button --pulse-on-hover" onclick={() => deleteTimetableDialogElement.close()}>Mégsem</button>
+    </div>
+</dialog>
+
+<dialog
+    class="dialog"
+    bind:this={urlExportDialogElement}
+>
+    <p class="--fs-h5">A "{currentManager?.getSaveName()}" nevű órarendhez tartozó URL:</p>
+    <a href={exportUrl} class="url">
+        {exportUrl}
+    </a>
+    <div class="dialog__buttons">
+        <button class="button icon-text button--primary-filled --pulse-on-hover" onclick={() => {urlExportDialogElement.close(); navigator.clipboard.writeText(exportUrl);}}>
+            <span class="ix--copy"></span>
+            <p>Másolás</p>
+        </button>
+        <button class="button --pulse-on-hover" onclick={() => urlExportDialogElement.close()}>Vissza</button>
     </div>
 </dialog>
 

@@ -144,6 +144,11 @@ footer {
 
 /* Helper classes */
 
+.url{
+  overflow-wrap: break-word;
+  max-width: 80vw;
+}
+
 .--warning.--warning{
   color: var(--clr-warning);
   padding: 0.5rem;
