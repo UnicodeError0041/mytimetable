@@ -1,7 +1,7 @@
 import type { LessonSave } from "./savedLessons.svelte";
 import { type DayOfWeek, type Time, type Semester, type LessonData, timeFromString, type Lesson, timeToNumber, lessonDataFromLesson } from "./types";
 import {v4 as uuidv4} from "uuid";
-import JSONCrush from 'JSONCrush';
+import JSONCrush from 'jsoncrush';
 
 type EncodedLesson = {
     subjectName: string,
