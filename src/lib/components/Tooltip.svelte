@@ -8,7 +8,7 @@
         content: string | Snippet,
         children: Snippet,
         config?: TooltipProps,
-        triggerType?: "hover" | "dragover" | "both",
+        triggerType?: "hover" | "dragover" | "both" | "none",
         classes?: string,
         attrs?: HTMLAttributes<HTMLElement>
     }
@@ -20,6 +20,11 @@
     let dragTriggered = false;
 
     const tooltipProps: TooltipProps = {...config, open: () => open, onOpenChange: value => {
+        if (triggerType === "none"){
+            open = false;
+            return;
+        }
+
         if (!value){
             open = value;
             return;

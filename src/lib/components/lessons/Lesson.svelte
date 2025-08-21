@@ -10,7 +10,7 @@
         isEdited?: boolean
         classes? : string
         attrs?: HTMLAttributes<HTMLElement>
-        triggerType?: "hover" | "dragover" | "both"
+        triggerType?: "hover" | "dragover" | "both" | "none"
         extraTooltipElement?: string | Snippet
     }
 
@@ -18,8 +18,8 @@
 
 
     const config: TooltipProps = {
-        openDelay: 400,
-        closeDelay: 100,
+        openDelay: 0,
+        closeDelay: 0,
         // closeOnPointerDown: false, 
         floatingConfig: {
             computePosition: {
