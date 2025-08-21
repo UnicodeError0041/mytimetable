@@ -20,7 +20,7 @@
     let mode: QueryMode = $state("keresnevre");
     let keyword = $state("");
 
-    let queryArgs: QueryArgs = $state([semesterFromString(semester), keyword, mode]);
+    let queryArgs: QueryArgs = $state([semesterFromString(semester), keyword.trim(), mode]);
 
     const debouncedQueryArgs = debounced(() => queryArgs, 500);
 
@@ -139,7 +139,7 @@
         e.preventDefault();
 
         clearFilters();
-        queryArgs = [semesterFromString(semester), keyword, mode];
+        queryArgs = [semesterFromString(semester), keyword.trim(), mode];
     }
 </script>
 <form class="search" onsubmit={onSubmit}>
