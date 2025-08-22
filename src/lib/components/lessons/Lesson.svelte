@@ -28,21 +28,51 @@
         }
     };
 
+    let textCopied = $state("");
+
+    let startedTimeout: NodeJS.Timeout;
+
+    const handleCopyClick = (text: string) => {
+        navigator.clipboard.writeText(text);
+
+        clearTimeout(startedTimeout);
+        textCopied = text;
+        startedTimeout = setTimeout(() => textCopied = "", 1000);
+    }
+
 </script>
+
+{#snippet lessonDataValue(text: string, tooltip: string)}
+    <div class="lesson__tooltip-data-value lesson__tooltip-data-value--with-button">
+        <p>{text}</p>
+        {#if text !== ""}
+            <Tooltip content={tooltip}>
+                <button
+                    aria-label={tooltip}
+                    class="button button--icon lesson__tooltip-data-button --secondary --pulse-on-hover --fs-h5"
+                    onclick={() => handleCopyClick(text)}
+                >
+                    <span class={textCopied === text ? "ix--single-check --bounce-in" :"ix--copy"}></span>
+                </button>
+            </Tooltip>
+        {/if}
+        
+    </div>
+{/snippet}
 
 {#snippet tooltipContent()}
     <div class="lesson__tooltip-content">
         <div class="lesson__tooltip-data">
             <div class="lesson__tooltip-data-name">Tárgynév: </div>
-            <div class="lesson__tooltip-data-value">{lesson.subjectName}</div>
+            {@render lessonDataValue(lesson.subjectName, "Tárgynév másolása")}
         </div>
         <div class="lesson__tooltip-data">
             <div class="lesson__tooltip-data-name">Tárgykód: </div>
-            <div class="lesson__tooltip-data-value">{lesson.subjectCode}</div>
+            {@render lessonDataValue(lesson.subjectCode, "Tárgykód másolása")}
         </div>
         <div class="lesson__tooltip-data">
             <div class="lesson__tooltip-data-name">Kurzuskód: </div>
-            <div class="lesson__tooltip-data-value">{lesson.courseCode}</div>
+            {@render lessonDataValue(lesson.courseCode, "Kurzuskód másolása")}
         </div>
         <div class="lesson__tooltip-data">
             <div class="lesson__tooltip-data-name">Kurzus típus: </div>
@@ -50,11 +80,11 @@
         </div>
         <div class="lesson__tooltip-data">
             <div class="lesson__tooltip-data-name">Tanár/megjegyzés: </div>
-            <div class="lesson__tooltip-data-value">{lesson.teacherAndComment}</div>
+            {@render lessonDataValue(lesson.teacherAndComment, "Tanár/megjegyzés másolása")}
         </div>
         <div class="lesson__tooltip-data">
             <div class="lesson__tooltip-data-name">Helyszín: </div>
-            <div class="lesson__tooltip-data-value">{lesson.location}</div>
+            {@render lessonDataValue(lesson.location, "Helyszín másolása")}
         </div>
         {#if (lesson.detailedTime == null || isEdited) && lesson.day !== null}
             <div class="lesson__tooltip-data">
@@ -77,7 +107,7 @@
         {#if lesson.detailedTime !== null}
              <div class="lesson__tooltip-data">
                 <div class="lesson__tooltip-data-name">{isEdited ? "Eredeti idő" : "Idő"}:</div>
-                <div class="lesson__tooltip-data-value">{lesson.detailedTime}</div>
+                {@render lessonDataValue(lesson.detailedTime, "Részletes idő másolása")}
             </div>
         {/if}
         {#if lesson.semester !== null}

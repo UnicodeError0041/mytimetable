@@ -237,7 +237,7 @@
                 ondragstart: (e: DragEvent) => dragStartHandler(e, data.lessonData), 
                 ondragend: dragEndHandler,
             }}
-            triggerType={alternativeLessons.filter(l => data.lessonData.id === l.id).length > 0 ? "none" : "hover"}
+            triggerType={tableState === "drag" ? "none" : "hover"}
         />
     {:else if data.source === "queried"}
         <Lesson lesson={data.lessonData.lesson} {isEdited} classes="lesson--queried --pulse-on-hover {isLecture ? "lesson--lecture" : ""}"

@@ -15,25 +15,23 @@
 
     const {content, children, config, triggerType = "hover", classes="", attrs={}}: Props = $props();
 
-    let open = $state(false);
+    let shouldBeOpen = $state(false);
+
+    const open = $derived(triggerType === "none" ? false : shouldBeOpen);
 
     let dragTriggered = false;
 
     const tooltipProps: TooltipProps = {...config, open: () => open, onOpenChange: value => {
-        if (triggerType === "none"){
-            open = false;
-            return;
-        }
 
         if (!value){
-            open = value;
+            shouldBeOpen = value;
             return;
         }
 
         if ((triggerType === "hover" && dragTriggered) || (triggerType === "dragover" && !dragTriggered)){
             return;
         }
-        open = value;
+        shouldBeOpen = value;
     }}
     
 

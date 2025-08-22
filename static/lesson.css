@@ -97,6 +97,17 @@
     grid-column-start: 2;
 }
 
+.lesson__tooltip-data-value--with-button{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.3rem;
+}
+
+.lesson__tooltip-data-button.lesson__tooltip-data-button{
+    padding: 0;
+}
+
 .lesson__tooltip-extra-content{
     grid-column-start: 1;
     grid-column-end: 3;

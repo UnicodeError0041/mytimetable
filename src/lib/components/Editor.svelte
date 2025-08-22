@@ -170,7 +170,7 @@
                         <span class={isURLExporting ? isExportDone ? "ix--single-check --bounce-in" : "ix--draw-circle-arc --spinning" : "ix--link"}></span>
                         <p>
                             {#if isExportDone}
-                                URL vágólapra másolva
+                                URL legenerálva
                             {:else}
                                 Exportálás URL-ként
                             {/if}
