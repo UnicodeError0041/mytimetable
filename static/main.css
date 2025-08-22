@@ -147,6 +147,8 @@ footer {
 .url{
   overflow-wrap: break-word;
   max-width: 80vw;
+  max-height: 50vh;
+  overflow-y: scroll;
 }
 
 .--warning.--warning{
