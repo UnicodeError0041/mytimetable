@@ -11,11 +11,13 @@
 	import Tooltip from "./Tooltip.svelte";
 	import type { Lesson, LessonData } from "$lib/lessons/types";
 	import LessonDialog from "./LessonDialog.svelte";
-	import { decodeURI, encodeURI } from "$lib/lessons/encode";
+	import { encodeURI } from "$lib/lessons/encode";
+	import Combobox from "./inputs/Combobox.svelte";
 
 
     let deleteTimetableDialogElement: HTMLDialogElement = $state(null!);
     let urlExportDialogElement: HTMLDialogElement = $state(null!);
+    let copyTimetableDialogElement: HTMLDialogElement = $state(null!);
 
     let exportUrl = $state("");
 
@@ -33,6 +35,7 @@
     let tableState: "default" | "drag" = $state("default");
 
     let droppedSaveId: string | null = $state(null);
+    let timetableCopyTargetId: string = $state("");
 
     const savedLessons = getContext<SavedLessons>(SYMBOL_SAVED_LESSONS);
 
@@ -99,8 +102,35 @@
         }, 0);
     }
 
-    const deleteSave = () => {
+    const openDeleteSaveModal = () => {
         deleteTimetableDialogElement.showModal();
+    }
+
+    const openCopyTimetableModal = () => {
+        copyTimetableDialogElement.showModal();
+    }
+
+    const copyTimetable = () => {
+        if(timetableCopyTargetId === "done" || timetableCopyTargetId === "") {
+            return;
+        }
+
+        const ogId = currentManager?.getSaveId() as string;
+        const ogLessons = currentManager?.getLessons() ?? [];
+
+        savedLessons.switchSave(timetableCopyTargetId);
+
+        for(const lesson of ogLessons){
+            currentManager?.add(lesson);
+        }
+        savedLessons.switchSave(ogId);
+
+        timetableCopyTargetId = "done";
+
+        setTimeout(() => {
+            timetableCopyTargetId = "";
+            copyTimetableDialogElement.close();
+        }, 1000);
     }
 
     const onTabSwitch = (id: string) => {
@@ -236,8 +266,14 @@
                 />
             </div>
             {#if savedLessons.getSaveIds().length > 1 }
-                <Tooltip content="Órarend törlése">
-                    <button class="button button--icon --pulse-on-hover --error" aria-label="Órarend törlése" onclick={deleteSave} disabled={isImageExporting}>
+                <Tooltip content="Órarend óráinak átmásolása másik órarendbe" classes="editor__active-tab-button-holder">
+                    <button class="button button--icon --pulse-on-hover" aria-label="Órarend óráinak átmásolása másik órarendbe" onclick={openCopyTimetableModal} disabled={isImageExporting}>
+                        <div class="ix--export"></div>
+                    </button>
+                </Tooltip>
+
+                <Tooltip content="Órarend törlése" classes="editor__active-tab-button-holder">
+                    <button class="button button--icon --pulse-on-hover --error" aria-label="Órarend törlése" onclick={openDeleteSaveModal} disabled={isImageExporting}>
                         <div class="ix--trashcan"></div>
                     </button>
                 </Tooltip>
@@ -287,6 +323,21 @@
     <div class="dialog__buttons">
         <button class="button --pulse-on-hover --error" onclick={() => {deleteTimetableDialogElement.close(); savedLessons.removeSave(currentSaveId)}}>Törlés</button>
         <button class="button --pulse-on-hover" onclick={() => deleteTimetableDialogElement.close()}>Mégsem</button>
+    </div>
+</dialog>
+
+<dialog
+    class="dialog"
+    bind:this={copyTimetableDialogElement}
+>
+    <p class="--fs-h5">"{currentManager?.getSaveName()}" órarend óráinak átmásolása</p>
+    <Combobox label="Cél órarend" options={savedLessons.getSaveIds().filter(id => id !== currentManager?.getSaveId())} optionText={(id) => savedLessons.getSaveNameForId(id) ?? ""} bind:selected={timetableCopyTargetId}/>
+    <div class="dialog__buttons">
+         <button class="button icon-text button--primary-filled --pulse-on-hover" disabled={timetableCopyTargetId === ""} onclick={copyTimetable}>
+            <span class={timetableCopyTargetId === "done" ? "ix--single-check --bounce-in" : "ix--export"}></span>
+            <p>Átmásolás</p>
+        </button>
+        <button class="button --pulse-on-hover" onclick={() => {copyTimetableDialogElement.close(); timetableCopyTargetId = ""}}>Mégsem</button>
     </div>
 </dialog>
 
