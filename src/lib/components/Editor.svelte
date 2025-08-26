@@ -32,6 +32,8 @@
 
     let tableState: "default" | "drag" = $state("default");
 
+    let droppedSaveId: string | null = $state(null);
+
     const savedLessons = getContext<SavedLessons>(SYMBOL_SAVED_LESSONS);
 
     const currentManager = $derived.by(() => browser ? savedLessons.getCurrentManager() : null);
@@ -129,6 +131,9 @@
             savedLessons.switchSave(saveId);
             currentManager?.add(lesson);
             savedLessons.switchSave(oldId);
+
+            droppedSaveId = saveId;
+            setTimeout(() => droppedSaveId = null, 1000);
         }
 
         localStorage.removeItem("draggedLesson");
@@ -207,12 +212,14 @@
 {#snippet tabValue(id: string)}
     {#if id === "add"}
             <Tooltip content="Új órarend készítése" config={{openDelay: 500}}>
-                {#if savedLessons.getMaxSaveCount() !== savedLessons.getSaveIds().length}
-                    <div class="icon --fs-h4 ix--add-circle">
-                    </div>
-                {:else}
-                    <p class="--warning">Maximum órarendszám elérve</p>
-                {/if}
+                <div class="editor__inactive-tab">
+                    {#if savedLessons.getMaxSaveCount() !== savedLessons.getSaveIds().length}
+                        <div class="icon --fs-h4 ix--add-circle">
+                        </div>
+                    {:else}
+                        <p class="--warning">Maximum órarendszám elérve</p>
+                    {/if}
+                </div>
             </Tooltip>
         
     {:else if id === currentSaveId}
@@ -237,18 +244,25 @@
             {/if}
         </div>
     {:else}
+        {@const isDragging = tableState === "drag"}
+        {@const showIcon = droppedSaveId == id || isDragging}
         <Tooltip 
-            content="Dobd ide az órát a másoláshoz" 
-            triggerType="dragover" 
+            content="Dobd ide az órát az átmásoláshoz" 
+            triggerType="dragover"
+            classes="tooltip-trigger--ful-size" 
             config={{openDelay: 0, floatingConfig: {computePosition: {placement: "top"}}}}
         >
-            <p 
-                class={tableState === "drag" ? "--pulse": ""}
-                ondragover={tableState === "drag" ? dragOverHandler: undefined}
-                ondrop={tableState === "drag" ? e => dropHandler(e, id) : undefined}
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <div 
+                class="editor__inactive-tab {showIcon ? "icon-text" : ""} {isDragging ? "--pulse": ""}"
+                ondragover={isDragging ? dragOverHandler: undefined}
+                ondrop={isDragging ? e => dropHandler(e, id) : undefined}
             >
-                {savedLessons.getSaveNameForId(id)}
-            </p>
+                {#if showIcon}
+                    <span class="{isDragging ? "ix--import" :"ix--single-check --bounce-in"} icon --fs-h5"></span>
+                {/if}
+                <p>{savedLessons.getSaveNameForId(id)}</p>
+            </div>
         </Tooltip>
     {/if}
 {/snippet}

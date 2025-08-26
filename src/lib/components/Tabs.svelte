@@ -26,8 +26,8 @@
       {#each tabIds as id}
         <div class="tabs__trigger" {...tabs.getTrigger(id)}>
           <div class={tabs.value === id ? "" : "--pulse-on-hover"}>
-                {@render tabContent(id)}
-            </div>
+              {@render tabContent(id)}
+          </div>
         </div>
       {/each}
     </div>

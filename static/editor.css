@@ -29,8 +29,21 @@
     translate: 0 0.2rem;
 }
 
+.editor__active-tab,
+.editor__inactive-tab{
+    padding-inline: 0.5rem;
+    padding-block: 0.2rem;
+}
+
 .editor__active-tab{
     display: flex;
     gap: 0.5rem;
     align-items: center;
+}
+
+.editor__inactive-tab{
+    display: grid;
+    align-items: center;
+    width: 100%;
+    height: 100%;
 }

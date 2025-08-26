@@ -154,8 +154,6 @@
     border-top-right-radius: 0.3rem;
     border-bottom-right-radius: 0.3rem;
 
-    display: grid;
-
     background-color: var(--clr-error);
     color: var(--clr-background);
 
