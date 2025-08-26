@@ -47,6 +47,7 @@
 		"jsdom": "^26.1.0",
 		"jsoncrush": "^1.1.8",
 		"melt": "^0.38.0",
+		"mode-watcher": "^1.1.0",
 		"object-hash": "^3.0.0",
 		"uuid": "^11.1.0"
 	}

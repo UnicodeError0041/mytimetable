@@ -6,6 +6,7 @@
   import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
   import { injectAnalytics } from '@vercel/analytics/sveltekit'
   import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
+  import {ModeWatcher, toggleMode, mode} from 'mode-watcher';
 
   injectSpeedInsights();
 
@@ -25,8 +26,14 @@
     storage: browser ? window.localStorage : null,
   })
 </script>
+<ModeWatcher darkClassNames={["dark-mode"]} lightClassNames={["light-mode"]}/>
 
 <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
+  <nav>
+    <button class="button button--icon --pulse-on-hover --fs-h5" onclick={toggleMode} aria-label="sötét/világos mód">
+      <div class={mode.current === "dark" ? "ix--sun": "ix--moon"}></div>
+    </button>
+  </nav>
   <main>
     {@render children()}
   </main>
