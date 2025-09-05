@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { browser } from "$app/environment";
-	import { SYMBOL_SAVED_LESSONS } from "$lib/lessons/lessonManager.svelte";
+	import { SYMBOL_OPEN_OPERATION_WARNING_MODAL, SYMBOL_SAVED_LESSONS } from "$lib/lessons/lessonManager.svelte";
 	import { type QueryData, SYMBOL_LESSONS_QUERY } from "$lib/lessons/query";
 	import type { LessonSave, SavedLessons } from "$lib/lessons/savedLessons.svelte";
-	import { getContext } from "svelte";
+	import { getContext, setContext } from "svelte";
 	import LessonsTimeTable from "./timetable/LessonsTimeTable.svelte";
     import {toPng} from "html-to-image"
     import download from 'downloadjs';
@@ -16,6 +16,7 @@
 
 
     let deleteTimetableDialogElement: HTMLDialogElement = $state(null!);
+    let operationWarningDialogElement: HTMLDialogElement = $state(null!);
     let urlExportDialogElement: HTMLDialogElement = $state(null!);
     let copyTimetableDialogElement: HTMLDialogElement = $state(null!);
 
@@ -110,6 +111,12 @@
         copyTimetableDialogElement.showModal();
     }
 
+    const openOperationWarningModal = () => {
+        operationWarningDialogElement.showModal();
+    }
+
+    setContext(SYMBOL_OPEN_OPERATION_WARNING_MODAL, openOperationWarningModal);
+
     const copyTimetable = () => {
         if(timetableCopyTargetId === "done" || timetableCopyTargetId === "") {
             return;
@@ -136,9 +143,13 @@
     const onTabSwitch = (id: string) => {
         const saveId = id === "add" ? savedLessons.createSave() : id;
 
-        if(saveId){
-            savedLessons.switchSave(saveId);
+        if (saveId === false){
+            openOperationWarningModal();
+            return;
         }
+        
+        savedLessons.switchSave(saveId);
+    
     }
 
     const dragOverHandler = (e: DragEvent) => {
@@ -159,7 +170,9 @@
             const oldId = currentManager?.getSaveId() as string;
 
             savedLessons.switchSave(saveId);
-            currentManager?.add(lesson);
+            if(!currentManager?.add(lesson)){
+                openOperationWarningModal();
+            };
             savedLessons.switchSave(oldId);
 
             droppedSaveId = saveId;
@@ -169,8 +182,25 @@
         localStorage.removeItem("draggedLesson");
     }
 
-    const handleNewLesson = () => {
+    const handleNewLessonDialog = () => {
         createLessonDialogOpenHandler();
+    }
+    const handleNewLesson = (data: LessonData) => {
+        if(!currentManager?.add(data)){
+            openOperationWarningModal();
+        }
+    }
+
+    const handleUndo = () => {
+        if(!currentManager?.undo()){
+            openOperationWarningModal();
+        }
+    }
+
+    const handleRedo = () => {
+        if(!currentManager?.redo()){
+            openOperationWarningModal();
+        }
     }
 
 </script>
@@ -212,7 +242,7 @@
                         </p>
                     </button>
                 {/if}
-                <button class="icon-text button --pulse-on-hover" onclick={handleNewLesson} disabled={isExporting}>
+                <button class="icon-text button --pulse-on-hover" onclick={handleNewLessonDialog} disabled={isExporting}>
                     <span class="ix--add-document-note"></span>
                     <p>Saját óra hozzáadása</p>
                 </button>
@@ -220,12 +250,12 @@
 
             <div>
                 <Tooltip content="Visszavonás">
-                    <button aria-label="visszavonás" class="button button--icon --pulse-on-hover --fs-h5" disabled={!canUndo || isImageExporting} onclick={() => currentManager?.undo()}>
+                    <button aria-label="visszavonás" class="button button--icon --pulse-on-hover --fs-h5" disabled={!canUndo || isImageExporting} onclick={handleUndo}>
                         <div class="ix--undo"></div>
                     </button>
                 </Tooltip>
                 <Tooltip content="Újracsinálás">
-                    <button aria-label="újracsinálás" class="button button--icon --pulse-on-hover --fs-h5" disabled={!canRedo || isImageExporting} onclick={() => currentManager?.redo()}>
+                    <button aria-label="újracsinálás" class="button button--icon --pulse-on-hover --fs-h5" disabled={!canRedo || isImageExporting} onclick={handleRedo}>
                         <div class="ix--redo"></div>
                     </button>
                 </Tooltip>
@@ -321,8 +351,23 @@
         <p>Ez a művelet nem visszavonható</p>
     </div>
     <div class="dialog__buttons">
-        <button class="button --pulse-on-hover --error" onclick={() => {deleteTimetableDialogElement.close(); savedLessons.removeSave(currentSaveId)}}>Törlés</button>
+        <button class="button --pulse-on-hover --error" onclick={() => {deleteTimetableDialogElement.close(); if(!savedLessons.removeSave(currentSaveId)){openOperationWarningModal();}}}>Törlés</button>
         <button class="button --pulse-on-hover" onclick={() => deleteTimetableDialogElement.close()}>Mégsem</button>
+    </div>
+</dialog>
+
+<dialog
+    class="dialog"
+    bind:this={operationWarningDialogElement}
+>
+    <p class="--fs-h5">Hiba művelet végrehajtása közben</p>
+    <div class="icon-text --error">
+        <span class="ix--warning-rhomb"></span>
+        <p>Ez a művelet nem végrehajtható</p>
+    </div>
+    <p>Ez előfordulhat akkor, ha egyszerre több lapon szerkesztesz órarendet. Töltsd újra az oldalt, hogy a legfrissebb órarendjeidet lásd!</p>
+    <div class="dialog__buttons">
+        <button class="button --pulse-on-hover" onclick={() => operationWarningDialogElement.close()}>Bezárás</button>
     </div>
 </dialog>
 
@@ -358,4 +403,4 @@
     </div>
 </dialog>
 
-<LessonDialog bind:dialogOpenHandler={createLessonDialogOpenHandler} onSave={data => currentManager?.add(data)} title="Saját óra hozzáadása"/>
+<LessonDialog bind:dialogOpenHandler={createLessonDialogOpenHandler} onSave={handleNewLesson} title="Saját óra hozzáadása"/>

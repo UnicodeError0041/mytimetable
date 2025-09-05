@@ -5,7 +5,7 @@
 	import Lesson from "../lessons/Lesson.svelte";
 	import { getContext } from "svelte";
 	import type { SavedLessons } from "$lib/lessons/savedLessons.svelte";
-	import { SYMBOL_SAVED_LESSONS } from "$lib/lessons/lessonManager.svelte";
+	import { SYMBOL_OPEN_OPERATION_WARNING_MODAL, SYMBOL_SAVED_LESSONS } from "$lib/lessons/lessonManager.svelte";
 	import { SYMBOL_LESSON_ALTERNATIVES, type LessonAlternatives } from "$lib/lessons/lessonAlternatives.svelte";
 	import Tooltip from "../Tooltip.svelte";
 	import LessonDialog from "../LessonDialog.svelte";
@@ -100,8 +100,12 @@
 
     addAllAlternatives();
 
+    const openOperationWarningModal = getContext(SYMBOL_OPEN_OPERATION_WARNING_MODAL) as () => void;
+
     const saveLesson = (lesson: LessonData) => {
-        currentManager.add(lesson)
+        if(!currentManager.add(lesson)){
+            openOperationWarningModal();
+        }
     }
 
     const dragStartHandler = async (e: DragEvent, data: LessonData) => {
@@ -148,7 +152,9 @@
 
         if (lesson.id){
             // console.log("adding lesson");
-            currentManager.update(lesson.id, data);
+            if(!currentManager.update(lesson.id, data)){
+                openOperationWarningModal();
+            }
         }
 
         localStorage.removeItem("draggedLesson");
@@ -177,7 +183,9 @@
 
         if (lesson.id){
             // console.log("adding lesson");
-            currentManager.remove(lesson.id);
+            if(!currentManager.remove(lesson.id)){
+                openOperationWarningModal();
+            }
         }
 
         localStorage.removeItem("draggedLesson");
@@ -189,7 +197,11 @@
     }
 
     const editEndHandler = (data: LessonData) => {
-        if(editedLesson?.id) currentManager.update(editedLesson?.id, data);
+        if(editedLesson?.id) {
+            if(!currentManager.update(editedLesson?.id, data)){
+                openOperationWarningModal();
+            }
+        };
     }
 
 </script>
@@ -212,7 +224,7 @@
                 <button
                     aria-label="óra törlése"
                     class="button button--icon --fs-h4 --error --pulse-on-hover"
-                    onclick={() => currentManager.remove(data.lessonData.id)}
+                    onclick={() => {if(!currentManager.remove(data.lessonData.id)){openOperationWarningModal();}}}
                 >
                     <span class="ix--trashcan"></span>
                 </button>

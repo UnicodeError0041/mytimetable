@@ -10,6 +10,7 @@ type Command = {
 }
 
 export const SYMBOL_SAVED_LESSONS = Symbol("lessonManager");
+export const SYMBOL_OPEN_OPERATION_WARNING_MODAL = Symbol("openOperationWarningModal");
 
 export type LessonsManager = {
     getSaveId: () => string,
@@ -38,6 +39,15 @@ export function createLessonManager(lessons_: LessonData[], saveId: string, save
 
     let stack: Command[] = $state([]);
     let cmdIdx = $state(0);
+
+    
+    const areLessonsUpToDate = () => {
+        if(!browser){
+            return false;
+        }
+
+        return JSON.stringify(JSON.parse(localStorage.getItem(`${SAVE_LESSON_KEY_PREFIX}${saveId}`) ?? "")?.lessons) === JSON.stringify($state.snapshot(lessons));
+    }
     
     // $inspect(stack);
     // $inspect(cmdIdx);
@@ -109,7 +119,7 @@ export function createLessonManager(lessons_: LessonData[], saveId: string, save
 
     const processCommand = (cmd: Command | false) => {
         // console.log(lessons);
-        if (!cmd){
+        if (!cmd || !areLessonsUpToDate()){
             return false;
         }
 
@@ -135,27 +145,35 @@ export function createLessonManager(lessons_: LessonData[], saveId: string, save
 
         // console.log("undo");
 
-        const can = canUndo;
+        if (!areLessonsUpToDate()){
+            return false;
+        }
 
         if (canUndo){
             cmdIdx--;
             stack[cmdIdx].undo();
         }
 
-        return can;
+        saveLessons();
+
+        return true;
     }
 
     const redo = () => {
         // console.log("redo");
 
-        const can = canRedo;
+        if (!areLessonsUpToDate()){
+            return false;
+        }
 
-        if (canRedo){
+        if (canRedo && areLessonsUpToDate()){
             stack[cmdIdx].do();
             cmdIdx++;
         }
 
-        return can;
+        saveLessons();
+
+        return true;
     }
 
     return {
