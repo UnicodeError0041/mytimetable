@@ -11,6 +11,8 @@
 	import { loadSavedLessonsFromLocalStorage, type SavedLessons } from '$lib/lessons/savedLessons.svelte';
 	import {setContext } from 'svelte';
 	import {decodeURI} from "$lib/lessons/encode"
+	import {MD5 as md5} from "object-hash"
+	import { json } from '@sveltejs/kit';
 
 	const savedLessons = loadSavedLessonsFromLocalStorage();
     
@@ -28,9 +30,36 @@
 		if (param){
 			const lessonSave = decodeURI(param);
 
-			const id = savedLessons.createSave(`Velem megosztott: ${lessonSave.saveName}`, lessonSave.lessons);
+			lessonSave.lessons.sort((a, b) => a.id.localeCompare(b.id));
 
-			if (id) savedLessons.switchSave(id);
+			const sameLessons = savedLessons.getSaveIds().filter(
+				id => {
+					if (savedLessons.getSaveNameForId(id) !== `Velem megosztott: ${lessonSave.saveName}`){
+						return false;
+					}
+					
+					savedLessons.switchSave(id);
+					// console.log($state.snapshot(savedLessons.getCurrentManager().getLessons()));
+					let returned =  JSON.stringify(
+						$state.snapshot(
+							savedLessons.getCurrentManager().getLessons()).toSorted((a, b) => a.id.localeCompare(b.id)
+						)
+					) ===  JSON.stringify(lessonSave.lessons);
+					// console.log(returned);
+					return returned;
+				}
+				
+			);
+
+			console.log(sameLessons);
+
+			if (sameLessons.length == 0){
+				const id = savedLessons.createSave(`Velem megosztott: ${lessonSave.saveName}`, lessonSave.lessons);
+
+				if (id) savedLessons.switchSave(id);
+			} else {
+				savedLessons.switchSave(sameLessons[0]);
+			}
 		}
 
 	}
