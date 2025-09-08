@@ -55,8 +55,10 @@ export function loadSavedLessonsFromLocalStorage(): SavedLessons{
         return localStorage.getItem(SAVE_LESSON_IDS_KEY) === JSON.stringify($state.snapshot(saveIds));
     }
 
+    let ignoreSavesUpToDate = true;
+
     const createSave = (name?: string, lessons?: LessonData[]) => {
-        if(saves.length >= MAX_SAVE_COUNT || !areSavesUpToDate()){
+        if(saves.length >= MAX_SAVE_COUNT || (!areSavesUpToDate() && !ignoreSavesUpToDate)){
             return false;
         }
 
@@ -82,6 +84,8 @@ export function loadSavedLessonsFromLocalStorage(): SavedLessons{
     if (saves.length === 0){
         createSave();
     }
+
+    ignoreSavesUpToDate = false;
 
     let currentManager = $state(managers[0]);
 
