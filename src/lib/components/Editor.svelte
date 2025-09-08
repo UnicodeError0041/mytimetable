@@ -75,7 +75,7 @@
         isImageExporting = true;
 
         setTimeout(async () => {
-            let dataUrl = await toPng(document.querySelector(`[data-lesson-timetable="${currentManager?.getSaveId()}"]`) as HTMLElement, {width: 1920});
+            let dataUrl = await toPng(document.querySelector(`[data-lesson-timetable="${currentManager?.getSaveId()}"]`) as HTMLElement, {width: 1920, skipFonts: true});
             download(dataUrl, `${currentManager?.getSaveName()}.png`, "image/png");
             isExportDone = true;
 
