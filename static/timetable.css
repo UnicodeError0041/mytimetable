@@ -22,17 +22,19 @@
     top: var(--top);
     background-color: var(--clr-text);
     width: 100%;
+    height: 0;
+
+    border: 0.01rem solid var(--clr-text);
 
     translate: 0 -50%;
 }
 
 .timetable__hour-line{
-    height: 0.01rem;
+    opacity: 0.8;
 }
 
 .timetable__minute-line{
-    height: 0.01rem;
-    opacity: 0.5;
+    opacity: 0.4;
 }
 
 .timetable__body{
