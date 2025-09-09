@@ -83,6 +83,9 @@ export function loadSavedLessonsFromLocalStorage(): SavedLessons{
 
     if (saves.length === 0){
         createSave();
+        if(browser){
+            localStorage.setItem(SAVE_LESSON_IDS_KEY, JSON.stringify(saveIds));
+        }
     }
 
     ignoreSavesUpToDate = false;
