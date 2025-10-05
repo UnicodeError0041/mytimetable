@@ -72,11 +72,30 @@
     height: 100%;
 }
 
+.lesson__tooltip{
+    display: flex;
+    padding: 0.5rem;
+    flex-direction: column;
+}
+
+/* .tooltip[data-side="top"] .lesson__tooltip{
+    flex-direction: column;
+}
+
+.tooltip[data-side="bottom"] .lesson__tooltip{
+    flex-direction: column-reverse;
+} */
+
 .lesson__tooltip-content{
     display: grid;
     max-width: 20rem;
     grid-template-columns: max-content 1fr;
     gap: 0.5rem;
+}
+
+.lesson__tooltip-data-header{
+    grid-column-start: 1;
+    grid-column-end: 3;
     padding: 0.5rem;
 }
 
@@ -85,6 +104,8 @@
     grid-column-start: 1;
     grid-column-end: 3;
     grid-template-columns: subgrid;
+
+    align-items: center;
 
     z-index: 999;
 }
@@ -115,7 +136,6 @@
     display: flex;
     justify-content: flex-end;
     align-items: flex-end;
-    gap: 0.5rem;
 }
 
 .timetable__element:has(.lesson){

@@ -175,6 +175,11 @@ footer {
   padding: 0.5rem;
 }
 
+.--background.--background{
+  color: var(--clr--background);
+  padding: 0.5rem;
+}
+
 .--invisible{
   opacity: 0;
 }

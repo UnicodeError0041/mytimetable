@@ -223,7 +223,7 @@
             <Tooltip content="Óra törlése">
                 <button
                     aria-label="óra törlése"
-                    class="button button--icon --fs-h4 --error --pulse-on-hover"
+                    class="button button--icon --fs-h5 --error --pulse-on-hover"
                     onclick={() => {if(!currentManager.remove(data.lessonData.id)){openOperationWarningModal();}}}
                 >
                     <span class="ix--trashcan"></span>
@@ -233,7 +233,7 @@
             <Tooltip content="Óra szerkesztése">
                 <button
                     aria-label="óra szerkesztése"
-                    class="button button--icon --fs-h4 --secondary --pulse-on-hover"
+                    class="button button--icon --fs-h5 --secondary --pulse-on-hover"
                     onclick={() => editStartHandler(data.lessonData)}
                 >
                     <span class="ix--edit-document"></span>

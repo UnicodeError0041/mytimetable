@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { dayOfWeekToString, semesterToString, timeToString, type Lesson, type LessonData } from "$lib/lessons/types";
+	import { dayOfWeekToString, semesterToString, timeToString, type DayOfWeek, type Lesson, type LessonData, type Time } from "$lib/lessons/types";
 	import type { HTMLAttributes } from "svelte/elements";
 	import Tooltip from "../Tooltip.svelte";
 	import type { TooltipProps } from "melt/builders";
@@ -40,6 +40,14 @@
         startedTimeout = setTimeout(() => textCopied = "", 1000);
     }
 
+    const displayedTime = $derived(`${dayOfWeekToString(lesson.day as DayOfWeek)} ${timeToString(lesson.startTime as Time)}-${timeToString(lesson.endTime as Time)}`);
+
+    const detailedTime = $derived(
+        (lesson.detailedTime == null ? "" : `Eredeti, részletes idő: ${lesson.detailedTime} `)
+        +
+        (lesson.semester == null ? "" : `Szemeszter: ${semesterToString(lesson.semester)}`)
+        );
+
 </script>
 
 {#snippet lessonDataValue(text: string, tooltip: string)}
@@ -60,62 +68,48 @@
     </div>
 {/snippet}
 
+{#snippet lessonDataIcon(iconClasses: string, tooltip: string)}
+    <div class="lesson__tooltip-data-name">
+        <Tooltip content={tooltip} config={{openDelay: 0, floatingConfig: {computePosition: {placement: "top"}}}}>
+            <span class="icon {iconClasses} --fs-h5"></span>
+        </Tooltip>
+    </div>
+{/snippet}
+
 {#snippet tooltipContent()}
-    <div class="lesson__tooltip-content">
-        <div class="lesson__tooltip-data">
-            <div class="lesson__tooltip-data-name">Tárgynév: </div>
-            {@render lessonDataValue(lesson.subjectName, "Tárgynév másolása")}
-        </div>
-        <div class="lesson__tooltip-data">
-            <div class="lesson__tooltip-data-name">Tárgykód: </div>
-            {@render lessonDataValue(lesson.subjectCode, "Tárgykód másolása")}
-        </div>
-        <div class="lesson__tooltip-data">
-            <div class="lesson__tooltip-data-name">Kurzuskód: </div>
-            {@render lessonDataValue(lesson.courseCode, "Kurzuskód másolása")}
-        </div>
-        <div class="lesson__tooltip-data">
-            <div class="lesson__tooltip-data-name">Kurzus típus: </div>
-            <div class="lesson__tooltip-data-value">{lesson.courseType}</div>
-        </div>
-        <div class="lesson__tooltip-data">
-            <div class="lesson__tooltip-data-name">Tanár/megjegyzés: </div>
-            {@render lessonDataValue(lesson.teacherAndComment, "Tanár/megjegyzés másolása")}
-        </div>
-        <div class="lesson__tooltip-data">
-            <div class="lesson__tooltip-data-name">Helyszín: </div>
-            {@render lessonDataValue(lesson.location, "Helyszín másolása")}
-        </div>
-        {#if (lesson.detailedTime == null || isEdited) && lesson.day !== null}
+    <div class="lesson__tooltip">
+        <div class="lesson__tooltip-content">
+            <div class="lesson__tooltip-data-header">
+                <span class="lesson__course-code">{lesson.courseCode}</span>-es kurzus kódú {lesson.courseType}
+            </div>
             <div class="lesson__tooltip-data">
-                <div class="lesson__tooltip-data-name">Nap: </div>
-                <div class="lesson__tooltip-data-value --capitalize">{dayOfWeekToString(lesson.day)}</div>
+                {@render lessonDataIcon("ix--book", "Tárgynév")}
+                {@render lessonDataValue(lesson.subjectName, "Tárgynév másolása")}
             </div>
-        {/if}
-        {#if (lesson.detailedTime == null || isEdited) && lesson.startTime !== null}
             <div class="lesson__tooltip-data">
-                <div class="lesson__tooltip-data-name">Kezdés idő: </div>
-                <div class="lesson__tooltip-data-value">{timeToString(lesson.startTime)}</div>
+                {@render lessonDataIcon("ix--id", "Tárgykód")}
+                {@render lessonDataValue(lesson.subjectCode, "Tárgykód másolása")}
             </div>
-        {/if}
-        {#if (lesson.detailedTime == null || isEdited) && lesson.endTime !== null}
             <div class="lesson__tooltip-data">
-                <div class="lesson__tooltip-data-name">Befejezés idő: </div>
-                <div class="lesson__tooltip-data-value">{timeToString(lesson.endTime)}</div>
+                {@render lessonDataIcon("ix--user", "Tanár/megjegyzés")}
+                {@render lessonDataValue(lesson.teacherAndComment, "Tanár/megjegyzés másolása")}
             </div>
-        {/if}
-        {#if lesson.detailedTime !== null}
-             <div class="lesson__tooltip-data">
-                <div class="lesson__tooltip-data-name">{isEdited ? "Eredeti idő" : "Idő"}:</div>
-                {@render lessonDataValue(lesson.detailedTime, "Részletes idő másolása")}
-            </div>
-        {/if}
-        {#if lesson.semester !== null}
             <div class="lesson__tooltip-data">
-                <div class="lesson__tooltip-data-name">Szemeszter: </div>
-                <div class="lesson__tooltip-data-value">{semesterToString(lesson.semester)}</div>
+                {@render lessonDataIcon("ix--location", "Helyszin")}
+                {@render lessonDataValue(lesson.location, "Helyszín másolása")}
             </div>
-        {/if}
+            <div class="lesson__tooltip-data">
+                {@render lessonDataIcon("ix--clock", "Idő")}
+                <div class="lesson__tooltip-data-value lesson__tooltip-data-value--with-button">
+                    <p>{displayedTime}</p>
+                    <Tooltip content={detailedTime} config={{openDelay: 0, floatingConfig: {computePosition: {placement: "top"}}}}>
+                        <div class="button button--icon lesson__tooltip-data-button --background --fs-h5">
+                            <span class="icon ix--info"></span>
+                        </div>
+                    </Tooltip>
+                </div>
+            </div>
+        </div>
         {#if extraTooltipElement !== undefined}
             <div class="lesson__tooltip-extra-content">
                 {#if typeof extraTooltipElement === "string"}
