@@ -56,6 +56,18 @@ export function semesterFromString(str: string): Semester {
     };
 }
 
+export function getCurrentSemester(): Semester {
+    const date = new Date();
+
+    const year = date.getFullYear();
+
+    if (date.getMonth() <= 6){
+        return {startYear: year - 1, isSpring: true};
+    } else {
+        return {startYear: year, isSpring: false};
+    }
+}
+
 export function timeToNumber(time: Time): number{
     return time.hour * 60 + time.minute;
 }

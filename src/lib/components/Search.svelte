@@ -3,18 +3,16 @@
 	import { getContext } from "svelte";
 	import SearchModeRadioGroup from "./inputs/SearchModeRadioGroup.svelte";
 	import SemesterRadioGroup from "./inputs/SemesterRadioGroup.svelte";
-	import { dayOfWeekToString, hasTimetableData, semesterFromString, semesterToString, type DayOfWeek, type LessonData, type Semester } from "$lib/lessons/types";
+	import { dayOfWeekToString, getCurrentSemester, hasTimetableData, semesterFromString, semesterToString, type DayOfWeek, type LessonData, type Semester } from "$lib/lessons/types";
     import { debounced } from '$lib/utility.svelte';
 	import type { CreateQueryResult } from "@tanstack/svelte-query";
 	import Tooltip from "./Tooltip.svelte";
 	import Collapsible from "./Collapsible.svelte";
-	import { derived } from "svelte/store";
-	import { json } from "@sveltejs/kit";
 
     const MAX_SHOWN_LESSONS = 80;
     const MAX_SEARCH_HISTORY_SIZE = 30;
 
-    let semester = $state("2024-2025-2");
+    let semester = $state(semesterToString(getCurrentSemester()));
     let mode: QueryMode = $state("keresnevre");
     let keyword = $state("");
 

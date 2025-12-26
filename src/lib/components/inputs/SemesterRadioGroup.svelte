@@ -22,7 +22,7 @@
         for (let i = 0; i < semesterCount; i++){
             const year = date.getFullYear();
 
-            if (date.getMonth() < 6){
+            if (date.getMonth() <= 6){
                 returned.push(semesterToString({startYear: year - 1, isSpring: true}));
             } else {
                 returned.push(semesterToString({startYear: year, isSpring: false}));
