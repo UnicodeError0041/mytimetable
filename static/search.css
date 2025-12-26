@@ -1,4 +1,6 @@
-.search{
+.search,
+.search__form,
+.search__wrapper{
     display: grid;
     justify-content: center;
 
@@ -7,6 +9,10 @@
 
 .search__filter{
     padding-bottom: 2rem;
+}
+
+.search__history{
+    display: flex;
 }
 
 .search__filter-icon{

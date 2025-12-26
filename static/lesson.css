@@ -123,6 +123,10 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.3rem;
+
+    > :first-child{
+        margin-right: auto;
+    }
 }
 
 .lesson__tooltip-data-button.lesson__tooltip-data-button{

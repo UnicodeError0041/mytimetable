@@ -224,8 +224,16 @@
 
   scale: 0;
   transform-origin: center center;
-  transition: scale var(--to-100ms) ease-out;
+
+  transition: scale var(--to-100ms) ease-out,
+              clip-path var(--to-100ms) ease-out;
+
   background-color: var(--clr-secondary);
+}
+
+.checkbox.checkbox--third-state::before {
+  clip-path: polygon(12% 35%, 50% 35%, 88% 35%, 88% 65%, 50% 65%, 12% 65%);
+  scale: 100%;
 }
 
 .checkbox:checked::before {

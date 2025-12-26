@@ -7,6 +7,12 @@ export const QUERY_MODES = ["keresnevre", "keres_kod_azon", "keres_okt"];
 
 export type QueryMode = "keresnevre" | "keres_kod_azon" | "keres_okt";
 
+export type QueryArgs = [
+    Semester,
+    string,
+    QueryMode,
+]
+
 export const MODE = "m";
 export const SEMESTER = "f";
 export const KEYWORD = "k";
@@ -16,7 +22,8 @@ const URL = "/api/lessonQuery";
 export const SYMBOL_LESSONS_QUERY = Symbol("lessonsQuery");
 
 export type QueryData = {
-    queriedLessons: LessonData[] | null
+    queriedLessons: LessonData[] | null,
+    queryAction?: (mode: QueryMode, keyword: string) => void
 }
 
 export async function fetchLessons(semester:Semester, keyword:string, mode: QueryMode):Promise<LessonData[]> {

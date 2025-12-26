@@ -170,6 +170,11 @@ footer {
   padding: 0.5rem;
 }
 
+.--primary.--primary{
+  color: var(--clr-primary);
+  padding: 0.5rem;
+}
+
 .--secondary.--secondary{
   color: var(--clr-secondary);
   padding: 0.5rem;
