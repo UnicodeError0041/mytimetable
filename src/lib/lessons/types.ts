@@ -68,6 +68,13 @@ export function getCurrentSemester(): Semester {
     }
 }
 
+export function getPreviousSemester(semester: Semester): Semester {
+    return {
+        startYear: semester.isSpring ? semester.startYear : semester.startYear - 1,
+        isSpring: !semester.isSpring
+    }
+}
+
 export function timeToNumber(time: Time): number{
     return time.hour * 60 + time.minute;
 }

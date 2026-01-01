@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { type RadioGroupProps } from "melt/builders";
 	import RadioGroup from "./RadioGroup.svelte";
-	import { semesterToString, type Semester } from "$lib/lessons/types";
+	import { getCurrentSemester, getPreviousSemester, semesterToString, type Semester } from "$lib/lessons/types";
 
     type Props = {
         semesterCount: number,
@@ -17,18 +17,13 @@
     const items = $derived.by(() => {
         let returned: string[] = [];
 
-        let date = new Date();
+        let semester = getCurrentSemester();
 
-        for (let i = 0; i < semesterCount; i++){
-            const year = date.getFullYear();
+        returned.push(semesterToString(semester));
 
-            if (date.getMonth() <= 6){
-                returned.push(semesterToString({startYear: year - 1, isSpring: true}));
-            } else {
-                returned.push(semesterToString({startYear: year, isSpring: false}));
-            }
-
-            date = new Date(date.getTime() - new Date(1970, 6, 1, 0, 0, 0, 0).getTime());
+        for (let i = 1; i < semesterCount; i++){
+            semester = getPreviousSemester(semester);
+            returned.push(semesterToString(semester));
         }
 
         return returned;
