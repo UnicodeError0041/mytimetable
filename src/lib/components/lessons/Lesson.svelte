@@ -65,10 +65,10 @@
 
 {#snippet lessonDataValue(text: string, tooltip: string, search_config?: {mode: QueryMode, keyword: string, tooltip: string})}
     <div class="lesson__tooltip-data-value lesson__tooltip-data-value--with-button">
-        <p>{text}</p>
+        <p class={text === "" ? "--half-transparent" : ""}>{text === "" ? "(nem beállított)" : text}</p>
 
         
-            {#if search_config}
+            {#if search_config && text !== ""}
                 <Tooltip content={search_config.tooltip}>
                     <button
                         aria-label={search_config.tooltip}
@@ -107,7 +107,11 @@
     <div class="lesson__tooltip">
         <div class="lesson__tooltip-content">
             <div class="lesson__tooltip-data-header">
-                <span class="lesson__course-code">{lesson.courseCode}</span>-es kurzus kódú {lesson.courseType}
+                {#if lesson.courseCode !== ""}
+                    <span class="lesson__course-code">{lesson.courseCode}</span>-es kurzus kódú {lesson.courseType}
+                {:else}
+                    <span class="lesson__course-code">(nem beállított)</span> kurzus kódú {lesson.courseType}
+                {/if}
             </div>
             <div class="lesson__tooltip-data">
                 {@render lessonDataIcon("ix--book", "Tárgynév")}
@@ -129,11 +133,13 @@
                 {@render lessonDataIcon("ix--clock", "Idő")}
                 <div class="lesson__tooltip-data-value lesson__tooltip-data-value--with-button">
                     <p>{displayedTime}</p>
-                    <Tooltip content={detailedTime} config={{openDelay: 300, floatingConfig: {computePosition: {placement: "top"}}}}>
-                        <div class="button button--icon lesson__tooltip-data-button --background --fs-h5">
-                            <span class="icon ix--info"></span>
-                        </div>
-                    </Tooltip>
+                    {#if detailedTime !== ""}
+                        <Tooltip content={detailedTime} config={{openDelay: 300, floatingConfig: {computePosition: {placement: "top"}}}}>
+                            <div class="button button--icon lesson__tooltip-data-button --background --fs-h5">
+                                <span class="icon ix--info"></span>
+                            </div>
+                        </Tooltip>
+                    {/if}
                 </div>
             </div>
         </div>
@@ -152,7 +158,9 @@
 <Tooltip classes="lesson {classes}" content={tooltipContent} {triggerType} {config} {attrs}>
     <div>
         <p class="lesson__subject">
-            <span class="lesson__course-code">{lesson.courseCode}</span> {lesson.subjectName}
+            {#if lesson.courseCode !== ""}
+                <span class="lesson__course-code">{lesson.courseCode}</span>
+            {/if} {lesson.subjectName}
         </p>
         <p class="lesson__teacher">
             {lesson.teacherAndComment}
