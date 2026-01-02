@@ -9,7 +9,7 @@
 	import Tooltip from "./Tooltip.svelte";
 	import Collapsible from "./Collapsible.svelte";
 
-    const MAX_SHOWN_LESSONS = 80;
+    const MAX_SHOWN_LESSONS = 70;
     const MAX_SEARCH_HISTORY_SIZE = 30;
 
     let semester = $state(semesterToString(getCurrentSemester()));
@@ -229,231 +229,235 @@
             </button>
         </form>
     </div>
+    
+    {#if query?.isLoading}
+        <p>Keresés...</p>
+    {:else if query?.isFetched}
+        {#if validQueriedLessons.length !== 0}
+            {#snippet collapsibleHeader()}
+                <div class="search__filter-icon-holder">
+                    {#if filteredLessons.length !== validQueriedLessons.length}
+                        <Tooltip content="Szűrő viszzaállítása">
+                            <button aria-label="szűrő viszzaállítása" class="button button--icon button--primary-filled --pulse-on-hover --fs-h4"
+                                onclick={clearFiltersClickHandler}
+                            >
+                                <div class="ix--clear-filter"></div>
+                            </button>
+                        </Tooltip>
+                    {:else}
+                        <div class="search__filter-icon">
+                            <div class="icon --fs-h4"><span class="ix--filter"></span></div>
+                        </div>
+                    {/if}
+                </div>
+                <div>Szűrés</div>
+            {/snippet}
+
+            <Collapsible
+                headerSnippet={collapsibleHeader}
+                collapsibleClasses="search__filter"
+                headerClasses="search__filter-header --fs-h5"
+                contentHolderClasses="search__filter-content-holder"
+                contentClasses="search__filter-content"
+            >
+                <div>
+                    {#snippet subjectHeader()}
+                        <label class="label--inline --fs-h5">
+                            <input type="checkbox"
+                                name="összes tárgy szűrése"
+                                checked={excludedSubjectCodes.length === 0}
+                                class="checkbox {excludedSubjectCodes.length !== 0 && excludedSubjectCodes.length !== subjects.length ? "checkbox--third-state" : ""}"
+
+                                onchange={e => {
+                                    e.stopPropagation();
+
+                                    return excludedSubjectCodes.length === 0 ?
+                                        excludedSubjectCodes = subjects.map(s => s.code)
+                                    :
+                                        excludedSubjectCodes = []
+                                }
+
+                                }
+                            >
+                            <span>Tárgyak:
+                                <span class="--fs-small --half-transparent">{subjects.length - excludedSubjectCodes.length}/{subjects.length}</span>
+                            </span>
+                        </label>
+                    {/snippet}
+
+                    <Collapsible headerSnippet={subjectHeader}>
+                        <div class="search__filter-category">
+                            {#each subjects as subject}
+                                <div>
+                                    <label class="label--inline">
+                                        <input type="checkbox"
+                                            name="{subject.code} ({subject.name})"
+                                            checked={!excludedSubjectCodes.includes(subject.code)}
+                                            class="checkbox"
+
+                                            onchange={() =>
+                                                excludedSubjectCodes.includes(subject.code) ?
+                                                    excludedSubjectCodes = excludedSubjectCodes.filter(c => c !== subject.code)
+                                                :
+                                                    excludedSubjectCodes.push(subject.code)
+                                            }
+                                        >
+                                        <span>{subject.code} <span class="--fs-small">({subject.name})</span></span>
+                                    </label>
+                                    <p class="--fs-small --half-transparent">{getSubjectCount(subject.code)}db</p>
+                                </div>
+                            {/each}
+                        </div>
+                    </Collapsible>
+
+                </div>
+                <div>
+                    {#snippet courseHeader()}
+                        <label class="label--inline --fs-h5">
+                            <input type="checkbox"
+                                name="összes kurzus típus szűrése"
+                                checked={excludedCourseTypes.length === 0}
+                                class="checkbox {excludedCourseTypes.length !== 0 && excludedCourseTypes.length !== courseTypes.length ? "checkbox--third-state" : ""}"
+
+                                onchange={() =>
+                                    excludedCourseTypes.length === 0 ?
+                                        excludedCourseTypes = courseTypes.map(s => s)
+                                    :
+                                        excludedCourseTypes = []
+                                }
+                            >
+                            <span>Kurzus típus:
+                                <span class="--fs-small --half-transparent">{courseTypes.length - excludedCourseTypes.length}/{courseTypes.length}</span>
+                            </span>
+                        </label>
+                    {/snippet}
+
+                    <Collapsible headerSnippet={courseHeader}>
+                        <div class="search__filter-category">
+                            {#each courseTypes as type}
+                                <div>
+                                    <label class="label--inline">
+                                        <input type="checkbox" name="{type}"
+                                            checked={!excludedCourseTypes.includes(type)}
+                                            class="checkbox"
+
+                                            onchange={() =>
+                                                excludedCourseTypes.includes(type) ?
+                                                    excludedCourseTypes = excludedCourseTypes.filter(c => c !== type)
+                                                :
+                                                    excludedCourseTypes.push(type)
+                                            }
+                                        >
+                                        <span>{type}</span>
+                                    </label>
+                                    <p class="--fs-small --half-transparent">
+                                        {getCourseTypeCount(type)}db
+                                    </p>
+                                </div>
+                            {/each}
+                        </div>
+                    </Collapsible>
+                </div>
+                <div>
+                    {#snippet teacherHeader()}
+                        <label class="label--inline --fs-h5">
+                            <input type="checkbox"
+                                name="összes tanár szűrése"
+                                checked={excludedTeachers.length === 0}
+                                class="checkbox {excludedTeachers.length !== 0 && excludedTeachers.length !== teachers.length ? "checkbox--third-state" : ""}"
+
+                                onchange={() =>
+                                    excludedTeachers.length === 0 ?
+                                        excludedTeachers = teachers
+                                    :
+                                        excludedTeachers = []
+                                }
+                            >
+                            <span>Tanárok/Kommentek:
+                                <span class="--fs-small --half-transparent">{teachers.length - excludedTeachers.length}/{teachers.length}</span>
+                            </span>
+                        </label>
+                    {/snippet}
+
+                    <Collapsible headerSnippet={teacherHeader}>
+                        <div class="search__filter-category">
+                            {#each teachers as teacher}
+                                <div>
+                                    <label class="label--inline">
+                                        <input type="checkbox" name="{teacher}"
+                                            checked={!excludedTeachers.includes(teacher)}
+                                            class="checkbox"
+
+                                            onchange={() =>
+                                                excludedTeachers.includes(teacher) ?
+                                                    excludedTeachers = excludedTeachers.filter(c => c !== teacher)
+                                                :
+                                                    excludedTeachers.push(teacher)
+                                            }
+                                        >
+                                        <span>{teacher}</span>
+                                    </label>
+                                    <p class="--fs-small --half-transparent">
+                                        {getTeacherCount(teacher)}db
+                                    </p>
+                                </div>
+                            {/each}
+                        </div>
+                    </Collapsible>
+                </div>
+                <div>
+                    {#snippet dayHeader()}
+                        <label class="label--inline --fs-h5">
+                            <input type="checkbox"
+                                name="összes nap szűrése"
+                                checked={excludedDays.length === 0}
+                                class="checkbox {excludedDays.length !== 0 && excludedDays.length !== days.length ? "checkbox--third-state" : ""}"
+
+                                onchange={() =>
+                                    excludedDays.length === 0 ?
+                                        excludedDays = days.map(s => s)
+                                    :
+                                        excludedDays = []
+                                }
+                            >
+                            <span>Napok:
+                                <span class="--fs-small --half-transparent">{days.length - excludedDays.length}/{days.length}</span>
+                            </span>
+                        </label>
+                    {/snippet}
+
+                    <Collapsible headerSnippet={dayHeader}>
+                        <div class="search__filter-category">
+                            {#each days as day}
+                                <div>
+                                    <label class="label--inline">
+                                        <input type="checkbox" name="{dayOfWeekToString(day)}"
+                                            checked={!excludedDays.includes(day)}
+                                            class="checkbox"
+
+                                            onchange={() =>
+                                                excludedDays.includes(day) ?
+                                                    excludedDays = excludedDays.filter(c => c !== day)
+                                                :
+                                                    excludedDays.push(day)
+                                            }
+                                        >
+                                        <span>{dayOfWeekToString(day)}</span>
+                                    </label>
+                                    <p class="--fs-small --half-transparent">
+                                        {getDayCount(day)}db
+                                    </p>
+                                </div>
+                            {/each}
+                        </div>
+                    </Collapsible>
+                </div>
+            </Collapsible>
+        {/if}
+    {/if}
+
     <div>
-        {#if query?.isLoading}
-            <p>Keresés...</p>
-        {:else if query?.isFetched}
-            {#if validQueriedLessons.length !== 0}
-                {#snippet collapsibleHeader()}
-                    <div class="search__filter-icon-holder">
-                        {#if filteredLessons.length !== validQueriedLessons.length}
-                            <Tooltip content="Szűrő viszzaállítása">
-                                <button aria-label="szűrő viszzaállítása" class="button button--icon button--primary-filled --pulse-on-hover --fs-h4"
-                                    onclick={clearFiltersClickHandler}
-                                >
-                                    <div class="ix--clear-filter"></div>
-                                </button>
-                            </Tooltip>
-                        {:else}
-                            <div class="search__filter-icon">
-                                <div class="icon --fs-h4"><span class="ix--filter"></span></div>
-                            </div>
-                        {/if}
-                    </div>
-                    <div>Szűrés</div>
-                {/snippet}
-    
-                <Collapsible
-                    headerSnippet={collapsibleHeader}
-                    collapsibleClasses="search__filter"
-                    headerClasses="search__filter-header --fs-h5"
-                    contentHolderClasses="search__filter-content-holder"
-                    contentClasses="search__filter-content"
-                >
-                    <div>
-                        {#snippet subjectHeader()}
-                            <label class="label--inline --fs-h5">
-                                <input type="checkbox"
-                                    name="összes tárgy szűrése"
-                                    checked={excludedSubjectCodes.length === 0}
-                                    class="checkbox {excludedSubjectCodes.length !== 0 && excludedSubjectCodes.length !== subjects.length ? "checkbox--third-state" : ""}"
-    
-                                    onchange={e => {
-                                        e.stopPropagation();
-    
-                                        return excludedSubjectCodes.length === 0 ?
-                                            excludedSubjectCodes = subjects.map(s => s.code)
-                                        :
-                                            excludedSubjectCodes = []
-                                    }
-    
-                                    }
-                                >
-                                <span>Tárgyak:
-                                    <span class="--fs-small --half-transparent">{subjects.length - excludedSubjectCodes.length}/{subjects.length}</span>
-                                </span>
-                            </label>
-                        {/snippet}
-    
-                        <Collapsible headerSnippet={subjectHeader}>
-                            <div class="search__filter-category">
-                                {#each subjects as subject}
-                                    <div>
-                                        <label class="label--inline">
-                                            <input type="checkbox"
-                                                name="{subject.code} ({subject.name})"
-                                                checked={!excludedSubjectCodes.includes(subject.code)}
-                                                class="checkbox"
-    
-                                                onchange={() =>
-                                                    excludedSubjectCodes.includes(subject.code) ?
-                                                        excludedSubjectCodes = excludedSubjectCodes.filter(c => c !== subject.code)
-                                                    :
-                                                        excludedSubjectCodes.push(subject.code)
-                                                }
-                                            >
-                                            <span>{subject.code} <span class="--fs-small">({subject.name})</span></span>
-                                        </label>
-                                        <p class="--fs-small --half-transparent">{getSubjectCount(subject.code)}db</p>
-                                    </div>
-                                {/each}
-                            </div>
-                        </Collapsible>
-    
-                    </div>
-                    <div>
-                        {#snippet courseHeader()}
-                            <label class="label--inline --fs-h5">
-                                <input type="checkbox"
-                                    name="összes kurzus típus szűrése"
-                                    checked={excludedCourseTypes.length === 0}
-                                    class="checkbox {excludedCourseTypes.length !== 0 && excludedCourseTypes.length !== courseTypes.length ? "checkbox--third-state" : ""}"
-    
-                                    onchange={() =>
-                                        excludedCourseTypes.length === 0 ?
-                                            excludedCourseTypes = courseTypes.map(s => s)
-                                        :
-                                            excludedCourseTypes = []
-                                    }
-                                >
-                                <span>Kurzus típus:
-                                    <span class="--fs-small --half-transparent">{courseTypes.length - excludedCourseTypes.length}/{courseTypes.length}</span>
-                                </span>
-                            </label>
-                        {/snippet}
-    
-                        <Collapsible headerSnippet={courseHeader}>
-                            <div class="search__filter-category">
-                                {#each courseTypes as type}
-                                    <div>
-                                        <label class="label--inline">
-                                            <input type="checkbox" name="{type}"
-                                                checked={!excludedCourseTypes.includes(type)}
-                                                class="checkbox"
-    
-                                                onchange={() =>
-                                                    excludedCourseTypes.includes(type) ?
-                                                        excludedCourseTypes = excludedCourseTypes.filter(c => c !== type)
-                                                    :
-                                                        excludedCourseTypes.push(type)
-                                                }
-                                            >
-                                            <span>{type}</span>
-                                        </label>
-                                        <p class="--fs-small --half-transparent">
-                                            {getCourseTypeCount(type)}db
-                                        </p>
-                                    </div>
-                                {/each}
-                            </div>
-                        </Collapsible>
-                    </div>
-                    <div>
-                        {#snippet teacherHeader()}
-                            <label class="label--inline --fs-h5">
-                                <input type="checkbox"
-                                    name="összes tanár szűrése"
-                                    checked={excludedTeachers.length === 0}
-                                    class="checkbox {excludedTeachers.length !== 0 && excludedTeachers.length !== teachers.length ? "checkbox--third-state" : ""}"
-    
-                                    onchange={() =>
-                                        excludedTeachers.length === 0 ?
-                                            excludedTeachers = teachers
-                                        :
-                                            excludedTeachers = []
-                                    }
-                                >
-                                <span>Tanárok/Kommentek:
-                                    <span class="--fs-small --half-transparent">{teachers.length - excludedTeachers.length}/{teachers.length}</span>
-                                </span>
-                            </label>
-                        {/snippet}
-    
-                        <Collapsible headerSnippet={teacherHeader}>
-                            <div class="search__filter-category">
-                                {#each teachers as teacher}
-                                    <div>
-                                        <label class="label--inline">
-                                            <input type="checkbox" name="{teacher}"
-                                                checked={!excludedTeachers.includes(teacher)}
-                                                class="checkbox"
-    
-                                                onchange={() =>
-                                                    excludedTeachers.includes(teacher) ?
-                                                        excludedTeachers = excludedTeachers.filter(c => c !== teacher)
-                                                    :
-                                                        excludedTeachers.push(teacher)
-                                                }
-                                            >
-                                            <span>{teacher}</span>
-                                        </label>
-                                        <p class="--fs-small --half-transparent">
-                                            {getTeacherCount(teacher)}db
-                                        </p>
-                                    </div>
-                                {/each}
-                            </div>
-                        </Collapsible>
-                    </div>
-                    <div>
-                        {#snippet dayHeader()}
-                            <label class="label--inline --fs-h5">
-                                <input type="checkbox"
-                                    name="összes nap szűrése"
-                                    checked={excludedDays.length === 0}
-                                    class="checkbox {excludedDays.length !== 0 && excludedDays.length !== days.length ? "checkbox--third-state" : ""}"
-    
-                                    onchange={() =>
-                                        excludedDays.length === 0 ?
-                                            excludedDays = days.map(s => s)
-                                        :
-                                            excludedDays = []
-                                    }
-                                >
-                                <span>Napok:
-                                    <span class="--fs-small --half-transparent">{days.length - excludedDays.length}/{days.length}</span>
-                                </span>
-                            </label>
-                        {/snippet}
-    
-                        <Collapsible headerSnippet={dayHeader}>
-                            <div class="search__filter-category">
-                                {#each days as day}
-                                    <div>
-                                        <label class="label--inline">
-                                            <input type="checkbox" name="{dayOfWeekToString(day)}"
-                                                checked={!excludedDays.includes(day)}
-                                                class="checkbox"
-    
-                                                onchange={() =>
-                                                    excludedDays.includes(day) ?
-                                                        excludedDays = excludedDays.filter(c => c !== day)
-                                                    :
-                                                        excludedDays.push(day)
-                                                }
-                                            >
-                                            <span>{dayOfWeekToString(day)}</span>
-                                        </label>
-                                        <p class="--fs-small --half-transparent">
-                                            {getDayCount(day)}db
-                                        </p>
-                                    </div>
-                                {/each}
-                            </div>
-                        </Collapsible>
-                    </div>
-                </Collapsible>
-            {/if}
+        {#if query?.isFetched}
             <p>{allQueriedLessons.length} találatból {filteredLessons.length} megjelenítve</p>
             {#if allQueriedLessons.length !== validQueriedLessons.length}
                 <div class="--warning icon-text">

@@ -210,8 +210,8 @@
 {#snippet editor(id: string)}
     <div class="editor">
         {#if !showQueriedLessons}
-            <div class="icon-text --warning">
-                <span class="ix--warning"></span>
+            <div class="icon-text">
+                <span class="ix--info"></span>
                 <p>A keresési találatok megjelenítése ki van kapcsolva</p>
             </div>
         {/if}

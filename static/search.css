@@ -9,6 +9,8 @@
 
 .search__filter{
     padding-bottom: 2rem;
+    width: fit-content;
+    margin-inline: auto;
 }
 
 .search__history{
