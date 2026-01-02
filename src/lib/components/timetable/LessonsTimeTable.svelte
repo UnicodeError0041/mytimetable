@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { lessonDataFromLesson, semesterToString, type LessonData, type Lesson as LessonType, type Semester } from "$lib/lessons/types";
+	import { semesterToString, type LessonData, type Lesson as LessonType, type Semester } from "$lib/lessons/types";
 	import TimeTable from "./TimeTable.svelte";
 	import { type TimeTableData } from "./types";
 	import Lesson from "../lessons/Lesson.svelte";

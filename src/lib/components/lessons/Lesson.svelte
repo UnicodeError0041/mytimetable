@@ -20,7 +20,7 @@
 
 
     const config: TooltipProps = {
-        openDelay: 0,
+        openDelay: 300,
         closeDelay: 0,
         // closeOnPointerDown: false, 
         floatingConfig: {
@@ -97,7 +97,7 @@
 
 {#snippet lessonDataIcon(iconClasses: string, tooltip: string)}
     <div class="lesson__tooltip-data-name">
-        <Tooltip content={tooltip} config={{openDelay: 0, floatingConfig: {computePosition: {placement: "top"}}}}>
+        <Tooltip content={tooltip} config={{openDelay: 300, floatingConfig: {computePosition: {placement: "top"}}}}>
             <span class="icon {iconClasses} --fs-h5"></span>
         </Tooltip>
     </div>
@@ -129,7 +129,7 @@
                 {@render lessonDataIcon("ix--clock", "Idő")}
                 <div class="lesson__tooltip-data-value lesson__tooltip-data-value--with-button">
                     <p>{displayedTime}</p>
-                    <Tooltip content={detailedTime} config={{openDelay: 0, floatingConfig: {computePosition: {placement: "top"}}}}>
+                    <Tooltip content={detailedTime} config={{openDelay: 300, floatingConfig: {computePosition: {placement: "top"}}}}>
                         <div class="button button--icon lesson__tooltip-data-button --background --fs-h5">
                             <span class="icon ix--info"></span>
                         </div>

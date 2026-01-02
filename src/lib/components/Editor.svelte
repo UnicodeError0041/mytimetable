@@ -271,7 +271,7 @@
 
 {#snippet tabValue(id: string)}
     {#if id === "add"}
-            <Tooltip content="Új órarend készítése" config={{openDelay: 500}}>
+            <Tooltip content="Új órarend készítése" config={{openDelay: 300}}>
                 <div class="editor__inactive-tab">
                     {#if savedLessons.getMaxSaveCount() !== savedLessons.getSaveIds().length}
                         <div class="icon --fs-h4 ix--add-circle">
@@ -316,7 +316,7 @@
             content="Dobd ide az órát az átmásoláshoz" 
             triggerType="dragover"
             classes="tooltip-trigger--ful-size" 
-            config={{openDelay: 0, floatingConfig: {computePosition: {placement: "top"}}}}
+            config={{floatingConfig: {computePosition: {placement: "top"}}}}
         >
             <!-- svelte-ignore a11y_no_static_element_interactions -->
             <div 
