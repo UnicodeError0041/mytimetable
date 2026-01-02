@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { LessonData, Lesson as LessonType } from "$lib/lessons/types";
+	import { lessonDataFromLesson, semesterToString, type LessonData, type Lesson as LessonType, type Semester } from "$lib/lessons/types";
 	import TimeTable from "./TimeTable.svelte";
 	import { type TimeTableData } from "./types";
 	import Lesson from "../lessons/Lesson.svelte";
@@ -102,7 +102,34 @@
 
     const openOperationWarningModal = getContext(SYMBOL_OPEN_OPERATION_WARNING_MODAL) as () => void;
 
-    const saveLesson = (lesson: LessonData) => {
+    let differentSemesterWarningDialog: HTMLDialogElement = $state(null!);
+    let differentSemesterWarningDialogConfig: {current_semester: string, new_lesson: LessonData} | undefined = $state(undefined);
+
+    const openDifferentSemesterWarningDialog = (current_semester: string, new_lesson: LessonData) => {
+        differentSemesterWarningDialogConfig = {
+            current_semester,
+            new_lesson
+        }
+
+        differentSemesterWarningDialog.showModal();
+    }
+
+    const saveLesson = (lesson: LessonData, check_semesters: boolean = true) => {
+        let semesters = new Set(
+                savedLessons
+                    .filter(l => l.lesson.semester !== null)
+                    .map(l => semesterToString(l.lesson.semester as Semester))
+        )
+
+        if( check_semesters &&
+            lesson.lesson.semester !== null && 
+            semesters.size === 1 && 
+            !semesters.has(semesterToString(lesson.lesson.semester))
+        ){
+            openDifferentSemesterWarningDialog(semesters.values().next().value as string, lesson);
+            return;
+        }
+
         if(!currentManager.add(lesson)){
             openOperationWarningModal();
         }
@@ -300,3 +327,27 @@
     </div>
     <LessonDialog title="Óra szerkesztése" bind:dialogOpenHandler={editLessonDialogOpenHandler} onSave={editEndHandler}/>
 </div>
+
+<dialog
+    class="dialog"
+    bind:this={differentSemesterWarningDialog}
+>
+    <p class="--fs-h5">Más szemeszter kurzusának hozzáadása</p>
+    {#if differentSemesterWarningDialogConfig}
+        <div class="icon-text --warning">
+            <span class="ix--warning"></span>
+            <p>Ez a kurzus <em>{semesterToString(differentSemesterWarningDialogConfig.new_lesson.lesson.semester as Semester)}</em> szemeszterhez tartozik, míg az órarend többi órája <em>{differentSemesterWarningDialogConfig.current_semester}</em> beli</p>
+        </div>
+        <p>Biztos hozzáadod a kurzust ehhez az órarendhez?</p>
+        <div class="dialog__buttons">
+            <button class="button --pulse-on-hover" onclick={
+            () => {
+                if(differentSemesterWarningDialogConfig){
+                    saveLesson(differentSemesterWarningDialogConfig.new_lesson, false);
+                }
+                differentSemesterWarningDialog.close()
+            }}>Hozzáadás</button>
+            <button class="button --pulse-on-hover" onclick={() => differentSemesterWarningDialog.close()}>Mégsem</button>
+        </div>
+    {/if}
+</dialog>
