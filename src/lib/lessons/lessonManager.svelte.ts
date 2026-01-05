@@ -11,6 +11,7 @@ type Command = {
 
 export const SYMBOL_SAVED_LESSONS = Symbol("lessonManager");
 export const SYMBOL_OPEN_OPERATION_WARNING_MODAL = Symbol("openOperationWarningModal");
+export const SYMBOL_OPEN_LESSON_EXPORT_MODAL = Symbol("openLessonExportModal");
 
 export type LessonsManager = {
     getSaveId: () => string,
@@ -28,9 +29,12 @@ export type LessonsManager = {
 
     undo: () => boolean,
     redo: () => boolean,
+
+    startBatch: () => boolean,
+    endBatch: () => boolean,
 }
 
-const MAX_STACK_SIZE = 100;
+const MAX_STACK_SIZE = 120;
 
 
 export function createLessonManager(lessons_: LessonData[], saveId: string, saveName_: string): LessonsManager{
@@ -40,6 +44,7 @@ export function createLessonManager(lessons_: LessonData[], saveId: string, save
     let stack: Command[] = $state([]);
     let cmdIdx = $state(0);
 
+    let inBatch = false;
     
     const areLessonsUpToDate = () => {
         if(!browser){
@@ -117,6 +122,44 @@ export function createLessonManager(lessons_: LessonData[], saveId: string, save
             false
     };
 
+    const startBatchCommand = () => {
+        if (inBatch){
+            return false;
+        }
+
+        return {
+            do: () => {
+                inBatch = true;
+
+                while(canRedo && inBatch){
+                    redo();
+                }
+            },
+            undo: () => {
+                inBatch = false;
+            }
+        } as Command
+    }
+
+    const endBatchCommand = () => {
+        if (!inBatch){
+            return false;
+        }
+
+        return {
+            do: () => {
+                inBatch = false;
+            },
+            undo: () => {
+                inBatch = true;
+
+                while (canUndo && inBatch){
+                    undo();
+                }
+            }
+        } as Command
+    }
+
     const processCommand = (cmd: Command | false) => {
         // console.log(lessons);
         if (!cmd || !areLessonsUpToDate()){
@@ -166,9 +209,9 @@ export function createLessonManager(lessons_: LessonData[], saveId: string, save
             return false;
         }
 
-        if (canRedo && areLessonsUpToDate()){
-            stack[cmdIdx].do();
+        if (canRedo){
             cmdIdx++;
+            stack[cmdIdx - 1].do();
         }
 
         saveLessons();
@@ -192,6 +235,9 @@ export function createLessonManager(lessons_: LessonData[], saveId: string, save
 
         undo,
         redo,
+
+        startBatch: () => Boolean(processCommand(startBatchCommand())),
+        endBatch: () => Boolean(processCommand(endBatchCommand())),
     }
 
 }

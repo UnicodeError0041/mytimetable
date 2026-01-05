@@ -5,7 +5,7 @@
 	import Lesson from "../lessons/Lesson.svelte";
 	import { getContext } from "svelte";
 	import type { SavedLessons } from "$lib/lessons/savedLessons.svelte";
-	import { SYMBOL_OPEN_OPERATION_WARNING_MODAL, SYMBOL_SAVED_LESSONS } from "$lib/lessons/lessonManager.svelte";
+	import { SYMBOL_OPEN_LESSON_EXPORT_MODAL, SYMBOL_OPEN_OPERATION_WARNING_MODAL, SYMBOL_SAVED_LESSONS } from "$lib/lessons/lessonManager.svelte";
 	import { SYMBOL_LESSON_ALTERNATIVES, type LessonAlternatives } from "$lib/lessons/lessonAlternatives.svelte";
 	import Tooltip from "../Tooltip.svelte";
 	import LessonDialog from "../LessonDialog.svelte";
@@ -101,6 +101,7 @@
     addAllAlternatives();
 
     const openOperationWarningModal = getContext(SYMBOL_OPEN_OPERATION_WARNING_MODAL) as () => void;
+    const openLessonCopyModal = getContext(SYMBOL_OPEN_LESSON_EXPORT_MODAL) as (lessons: LessonData[]) => void;
 
     let differentSemesterWarningDialog: HTMLDialogElement = $state(null!);
     let differentSemesterWarningDialogConfig: {current_semester: string, new_lesson: LessonData} | undefined = $state(undefined);
@@ -247,15 +248,17 @@
                     Ez egy szerkesztett óra
                 {/if}
             </p>
-            <Tooltip content="Óra törlése">
+
+            <Tooltip content="Óra átmásolása másik órarendbe">
                 <button
-                    aria-label="óra törlése"
-                    class="button button--icon --fs-h5 --error --pulse-on-hover"
-                    onclick={() => {if(!currentManager.remove(data.lessonData.id)){openOperationWarningModal();}}}
+                    aria-label="óra átmásolása másik órarendbe"
+                    class="button button--icon --fs-h5 --secondary --pulse-on-hover"
+                    onclick={() => openLessonCopyModal([data.lessonData])}
                 >
-                    <span class="ix--trashcan"></span>
+                    <span class="ix--export"></span>
                 </button>
             </Tooltip>
+            
 
             <Tooltip content="Óra szerkesztése">
                 <button
@@ -264,6 +267,16 @@
                     onclick={() => editStartHandler(data.lessonData)}
                 >
                     <span class="ix--edit-document"></span>
+                </button>
+            </Tooltip>
+
+            <Tooltip content="Óra törlése">
+                <button
+                    aria-label="óra törlése"
+                    class="button button--icon --fs-h5 --error --pulse-on-hover"
+                    onclick={() => {if(!currentManager.remove(data.lessonData.id)){openOperationWarningModal();}}}
+                >
+                    <span class="ix--trashcan"></span>
                 </button>
             </Tooltip>
         {/snippet}

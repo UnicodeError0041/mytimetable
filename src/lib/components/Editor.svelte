@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { browser } from "$app/environment";
-	import { SYMBOL_OPEN_OPERATION_WARNING_MODAL, SYMBOL_SAVED_LESSONS } from "$lib/lessons/lessonManager.svelte";
+	import { SYMBOL_OPEN_LESSON_EXPORT_MODAL as SYMBOL_OPEN_LESSON_COPY_MODAL, SYMBOL_OPEN_OPERATION_WARNING_MODAL, SYMBOL_SAVED_LESSONS } from "$lib/lessons/lessonManager.svelte";
 	import { type QueryData, SYMBOL_LESSONS_QUERY } from "$lib/lessons/query";
 	import type { LessonSave, SavedLessons } from "$lib/lessons/savedLessons.svelte";
 	import { getContext, setContext } from "svelte";
@@ -37,6 +37,7 @@
 
     let droppedSaveId: string | null = $state(null);
     let timetableCopyTargetId: string = $state("");
+    let lessonsToCopy: LessonData[] = $state([]);
 
     const savedLessons = getContext<SavedLessons>(SYMBOL_SAVED_LESSONS);
 
@@ -108,6 +109,12 @@
     }
 
     const openCopyTimetableModal = () => {
+        lessonsToCopy = currentManager?.getLessons() ?? [];
+        copyTimetableDialogElement.showModal();
+    }
+
+    const openCopyLessonsModal = (lessons: LessonData[]) => {
+        lessonsToCopy = lessons;
         copyTimetableDialogElement.showModal();
     }
 
@@ -116,6 +123,7 @@
     }
 
     setContext(SYMBOL_OPEN_OPERATION_WARNING_MODAL, openOperationWarningModal);
+    setContext(SYMBOL_OPEN_LESSON_COPY_MODAL, openCopyLessonsModal);
 
     const copyTimetable = () => {
         if(timetableCopyTargetId === "done" || timetableCopyTargetId === "") {
@@ -123,17 +131,28 @@
         }
 
         const ogId = currentManager?.getSaveId() as string;
-        const ogLessons = currentManager?.getLessons() ?? [];
 
         savedLessons.switchSave(timetableCopyTargetId);
 
-        for(const lesson of ogLessons){
-            currentManager?.add(lesson);
+        let success = currentManager?.startBatch();
+
+        for(const lesson of lessonsToCopy){
+            success &&= currentManager?.add(lesson);
         }
+
+        success &&= currentManager?.endBatch();
+
         savedLessons.switchSave(ogId);
 
+        
+        if(!success){
+            timetableCopyTargetId = "";
+            copyTimetableDialogElement.close();
+            openOperationWarningModal();
+            return;
+        }
+        
         timetableCopyTargetId = "done";
-
         setTimeout(() => {
             timetableCopyTargetId = "";
             copyTimetableDialogElement.close();
@@ -375,7 +394,7 @@
     class="dialog"
     bind:this={copyTimetableDialogElement}
 >
-    <p class="--fs-h5">"{currentManager?.getSaveName()}" órarend óráinak átmásolása</p>
+    <p class="--fs-h5">"{currentManager?.getSaveName()}" órarend {lessonsToCopy.length > 1 ? "óráinak" : "órájának"} átmásolása</p>
     <Combobox label="Cél órarend" options={savedLessons.getSaveIds().filter(id => id !== currentManager?.getSaveId())} optionText={(id) => savedLessons.getSaveNameForId(id) ?? ""} bind:selected={timetableCopyTargetId}/>
     <div class="dialog__buttons">
          <button class="button icon-text button--primary-filled --pulse-on-hover" disabled={timetableCopyTargetId === ""} onclick={copyTimetable}>
