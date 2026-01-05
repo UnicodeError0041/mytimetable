@@ -242,7 +242,7 @@
 
             <p>
                 {#if !data.lessonData.edited}
-                    Ragadj meg az áthelyezéshez!
+                    Ragadd meg az áthelyezéshez!
                 {:else}
                     Ez egy szerkesztett óra
                 {/if}

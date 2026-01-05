@@ -40,6 +40,7 @@
     let trigger: EventTarget | null = null;
 
     let openId: NodeJS.Timeout | null = null;
+    let closeId: NodeJS.Timeout | null = null;
 
     const handleDragEnter = (e: DragEvent) => {
         if (triggerType == "hover"){
@@ -51,7 +52,15 @@
         e.stopPropagation();
         e.preventDefault();
 
-        openId = setTimeout(() => {dragTriggered = true; tooltip.open = true; dragTriggered = false;}, tooltip.openDelay);
+        if(closeId != null){
+            clearTimeout(closeId);
+        }
+
+        openId = setTimeout(() => {
+            dragTriggered = true; 
+            tooltip.open = true; 
+            dragTriggered = false;
+        }, tooltip.openDelay);
     }
 
     const handleDragLeave = (e: DragEvent) => {
@@ -66,9 +75,9 @@
             clearTimeout(openId);
         }
 
-        setTimeout(() => {
+        closeId = setTimeout(() => {
             tooltip.open = false;
-        }, tooltip.closeDelay);
+        }, tooltip.open ? tooltip.closeDelay : tooltip.openDelay);
  
     }
 </script>

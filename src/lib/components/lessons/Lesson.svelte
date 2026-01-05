@@ -108,7 +108,7 @@
         <div class="lesson__tooltip-content">
             <div class="lesson__tooltip-data-header">
                 {#if lesson.courseCode !== ""}
-                    <span class="lesson__course-code">{lesson.courseCode}</span>-es kurzus kódú {lesson.courseType}
+                    <span class="lesson__course-code">{lesson.courseCode}</span> kurzus kódú {lesson.courseType}
                 {:else}
                     <span class="lesson__course-code">(nem beállított)</span> kurzus kódú {lesson.courseType}
                 {/if}
