@@ -13,6 +13,7 @@
 	import LessonDialog from "./LessonDialog.svelte";
 	import { encodeURI } from "$lib/lessons/encode";
 	import Combobox from "./inputs/Combobox.svelte";
+	import type { defaultServerMainFields } from "vite";
 
 
     let deleteTimetableDialogElement: HTMLDialogElement = $state(null!);
@@ -47,12 +48,25 @@
 
     const currentSaveId = $derived(currentManager?.getSaveId() ?? "");
 
+    const tabIds = $derived.by(() => {
+        let returned = []
+
+        for(let i = 0; i<savedLessons.getSaveIds().length; i++){
+            returned[i] = "" + i;
+        }
+        return returned;
+    })
+
     const queriedLessons = $derived(getContext<QueryData>(SYMBOL_LESSONS_QUERY).queriedLessons ?? []);
 
     const shownQueriedLessons = $derived(showQueriedLessons ? queriedLessons : []);
 
     const canUndo = $derived(currentManager !== null ? currentManager.canUndo() : false);
     const canRedo = $derived(currentManager !== null ? currentManager.canRedo() : false);
+
+    let draggedTabId: string | null = $state(null);
+
+    let cantDragTab: boolean = $state(true);
 
     const keydownHandler = (e: KeyboardEvent) => {
         if(!e.ctrlKey){
@@ -159,8 +173,18 @@
         }, 1000);
     }
 
+    const duplicateTimetable = () => {
+        savedLessons.createSave(`${currentManager?.getSaveName()} (másolat)`, currentManager?.getLessons());
+
+        timetableCopyTargetId = "done";
+        setTimeout(() => {
+            timetableCopyTargetId = "";
+        }, 1000);
+    }
+
     const onTabSwitch = (id: string) => {
-        const saveId = id === "add" ? savedLessons.createSave() : id;
+
+        const saveId = id === "add" ? savedLessons.createSave() : savedLessons.getSaveIds()[Number(id)];
 
         if (saveId === false){
             openOperationWarningModal();
@@ -171,7 +195,7 @@
     
     }
 
-    const dragOverHandler = (e: DragEvent) => {
+    const lessonDragOverHandler = (e: DragEvent) => {
         e.preventDefault();
 
         if (e.dataTransfer){
@@ -179,7 +203,7 @@
         }
     }
 
-    const dropHandler = (e: DragEvent, saveId: string) => {
+    const lessonDropHandler = (e: DragEvent, saveId: string) => {
         e.preventDefault();
 
         const lesson = JSON.parse(localStorage.getItem("draggedLesson") ?? "{}") as LessonData;
@@ -200,6 +224,49 @@
 
         localStorage.removeItem("draggedLesson");
     }
+
+    const tabDragOverHandler = (e: DragEvent) => {
+        e.preventDefault();
+
+        if (e.dataTransfer){
+            e.dataTransfer.dropEffect = "move";
+        }
+    }
+
+    const tabDropHandler = (e: DragEvent, saveId: string) => {
+         e.preventDefault();
+
+         if(draggedTabId === null){
+            return;
+         }
+
+        const saveIds = savedLessons.getSaveIds();
+
+        const idx = saveId === "add" ? saveIds.length - 1 : saveIds.indexOf(saveId);
+
+        savedLessons.moveSave(draggedTabId, idx);
+
+        draggedTabId = null;
+    }
+
+    const tabDragStartHandler = (e: DragEvent, saveId: string) => {
+
+        if(e.dataTransfer != null){
+                e.dataTransfer.effectAllowed = "move";
+                e.dataTransfer.dropEffect = "none";
+        }
+
+        draggedTabId = saveId;
+    }
+
+    const tabDragEndHandler = (e: DragEvent) => {
+        e.preventDefault();
+
+        if (e.dataTransfer != null){
+            draggedTabId = null;
+        }
+    }
+
 
     const handleNewLessonDialog = () => {
         createLessonDialogOpenHandler();
@@ -226,7 +293,9 @@
 
 <svelte:window onkeydown={keydownHandler}/>
 
-{#snippet editor(id: string)}
+{#snippet editor(tabId: string)}
+    {@const id = savedLessons.getSaveIds()[Number(tabId)]}
+
     <div class="editor">
         {#if !showQueriedLessons}
             <div class="icon-text">
@@ -289,9 +358,14 @@
 {/snippet}
 
 {#snippet tabValue(id: string)}
+    {@const saveId = savedLessons.getSaveIds()[Number(id)]}
+
     {#if id === "add"}
             <Tooltip content="Új órarend készítése" config={{openDelay: 300}}>
-                <div class="editor__inactive-tab">
+                <!-- svelte-ignore a11y_no_static_element_interactions -->
+                <div 
+                    class="editor__inactive-tab"
+                >
                     {#if savedLessons.getMaxSaveCount() !== savedLessons.getSaveIds().length}
                         <div class="icon --fs-h4 ix--add-circle">
                         </div>
@@ -301,8 +375,16 @@
                 </div>
             </Tooltip>
         
-    {:else if id === currentSaveId}
-        <div class="editor__active-tab">
+    {:else if saveId === currentSaveId}
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
+        <div
+            class="editor__active-tab"
+            draggable={!cantDragTab}
+            ondragstart={e => tabDragStartHandler(e, saveId)}
+            ondragend = {tabDragEndHandler}
+            ondragover={tabDragOverHandler}
+            ondrop={e => tabDropHandler(e, saveId)}
+        >
             <div class="--typewrite">
                 <input class="text-input text-input--small editor__text-input"
                     type="text"
@@ -312,41 +394,52 @@
                     onchange={e => currentManager?.setSaveName(e.currentTarget.value)}
                     disabled={isImageExporting}
                     onkeydown={e => e.stopPropagation()}
+                    bind:focused={cantDragTab}
                 />
             </div>
             {#if savedLessons.getSaveIds().length > 1 }
-                <Tooltip content="Órarend óráinak átmásolása másik órarendbe" classes="editor__active-tab-button-holder">
-                    <button class="button button--icon --pulse-on-hover" aria-label="Órarend óráinak átmásolása másik órarendbe" onclick={openCopyTimetableModal} disabled={isImageExporting}>
-                        <div class="ix--export"></div>
-                    </button>
-                </Tooltip>
-
-                <Tooltip content="Órarend törlése" classes="editor__active-tab-button-holder">
-                    <button class="button button--icon --pulse-on-hover --error" aria-label="Órarend törlése" onclick={openDeleteSaveModal} disabled={isImageExporting}>
-                        <div class="ix--trashcan"></div>
-                    </button>
-                </Tooltip>
+                <div class="editor__active-tab-buttons">
+                    <Tooltip content="Órarend óráinak átmásolása másik órarendbe" classes="editor__active-tab-button-holder">
+                        <button class="button button--icon --pulse-on-hover" aria-label="Órarend óráinak átmásolása másik órarendbe" onclick={openCopyTimetableModal} disabled={isImageExporting}>
+                            <div class="ix--export"></div>
+                        </button>
+                    </Tooltip>
+                    <Tooltip content="Órarend duplikálása" classes="editor__active-tab-button-holder">
+                        <button class="button button--icon --pulse-on-hover" aria-label="Órarend duplikálása" onclick={duplicateTimetable} disabled={isImageExporting}>
+                            <div class={timetableCopyTargetId == "done" ? "ix--single-check" : "ix--duplicate"}></div>
+                        </button>
+                    </Tooltip>
+                    <Tooltip content="Órarend törlése" classes="editor__active-tab-button-holder">
+                        <button class="button button--icon --pulse-on-hover --error" aria-label="Órarend törlése" onclick={openDeleteSaveModal} disabled={isImageExporting}>
+                            <div class="ix--trashcan"></div>
+                        </button>
+                    </Tooltip>
+                </div>
             {/if}
         </div>
     {:else}
-        {@const isDragging = tableState === "drag"}
-        {@const showIcon = droppedSaveId == id || isDragging}
+        {@const isDraggingLesson = tableState === "drag"}
+        {@const showIcon = droppedSaveId == saveId || isDraggingLesson}
         <Tooltip 
             content="Dobd ide az órát az átmásoláshoz" 
-            triggerType="dragover"
+            triggerType={isDraggingLesson ? "dragover" : "none"}
             classes="tooltip-trigger--ful-size" 
             config={{floatingConfig: {computePosition: {placement: "top"}}}}
         >
             <!-- svelte-ignore a11y_no_static_element_interactions -->
             <div 
-                class="editor__inactive-tab {showIcon ? "icon-text" : ""} {isDragging ? "--pulse": ""}"
-                ondragover={isDragging ? dragOverHandler: undefined}
-                ondrop={isDragging ? e => dropHandler(e, id) : undefined}
+                class="editor__inactive-tab {showIcon ? "icon-text" : ""} {isDraggingLesson ? "--pulse": ""}"
+                
+                draggable="true"
+                ondragstart={e => tabDragStartHandler(e, saveId)}
+                ondragend = {tabDragEndHandler}
+                ondragover={isDraggingLesson ? lessonDragOverHandler: tabDragOverHandler}
+                ondrop={isDraggingLesson ? e => lessonDropHandler(e, saveId) : e => tabDropHandler(e, saveId)}
             >
                 {#if showIcon}
-                    <span class="{isDragging ? "ix--import" :"ix--single-check --bounce-in"} icon --fs-h5"></span>
+                    <span class="{isDraggingLesson ? "ix--import" :"ix--single-check --bounce-in"} icon --fs-h5"></span>
                 {/if}
-                <p>{savedLessons.getSaveNameForId(id)}</p>
+                <p>{savedLessons.getSaveNameForId(saveId)}</p>
             </div>
         </Tooltip>
     {/if}
@@ -354,9 +447,9 @@
 
 <Tabs 
     tabContent={tabValue} 
-    tabIdValue={() => currentSaveId} 
+    tabIdValue={() => "" + savedLessons.getSaveIds().indexOf(currentSaveId)} 
     selectedContent={editor} 
-    tabIds={[...savedLessons.getSaveIds(), "add"]}
+    tabIds={[...tabIds, "add"]}
     onTabChange={onTabSwitch}
 />
 

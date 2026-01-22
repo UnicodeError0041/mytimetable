@@ -41,12 +41,16 @@
     align-items: center;
 }
 
+.editor__active-tab-buttons{
+    display: flex;
+}
+
 .editor__active-tab-button-holder{
     display: grid;
     align-items: center;
 
     > button{
-        padding: 0.5rem;
+        padding: 0.25rem;
     }
 }
 

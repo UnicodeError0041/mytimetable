@@ -15,6 +15,8 @@ export type SavedLessons = {
     createSave: (name?: string, lessons?: LessonData[]) => string | false,
     switchSave: (id: string) => boolean,
     removeSave: (id: string) => boolean,
+
+    moveSave: (id1: string, idx: number) => boolean
 }
 
 export type LessonSave = {
@@ -93,7 +95,7 @@ export function loadSavedLessonsFromLocalStorage(): SavedLessons{
     let currentManager = $state(managers[0]);
 
     const switchSave = (id: string) => {
-        const idx = saveIds.findIndex(n => n === id);
+        const idx = managers.findIndex(m => m.getSaveId() == id);
 
         if (idx === -1){
             return false;
@@ -112,8 +114,12 @@ export function loadSavedLessonsFromLocalStorage(): SavedLessons{
         }
 
         saveIds.splice(idx, 1);
-        saves.splice(idx, 1);
-        managers.splice(idx, 1);
+
+        const savesIdx = saves.findIndex(s => s.id === id);
+        saves.splice(savesIdx, 1);
+
+        const managersIdx = managers.findIndex(m => m.getSaveId() === id);
+        managers.splice(managersIdx, 1);
 
         localStorage.removeItem(`${SAVE_LESSON_KEY_PREFIX}${id}`);
 
@@ -121,6 +127,24 @@ export function loadSavedLessonsFromLocalStorage(): SavedLessons{
             currentManager = managers[idx % saveIds.length];
         }
 
+        return true;
+    }
+
+    const moveSave = (id: string, idx: number) => {
+        if(!saveIds.includes(id) || idx < 0 || idx >= saveIds.length || (!areSavesUpToDate() && !ignoreSavesUpToDate)){
+            return false;
+        }
+
+        let currentIdx = saveIds.indexOf(id);
+
+        const direction = currentIdx < idx ? 1 : -1;
+        
+        for(;currentIdx !== idx; currentIdx += direction){
+            saveIds[currentIdx] = saveIds[currentIdx + direction]
+        }
+
+        saveIds[currentIdx] = id;
+    
         return true;
     }
 
@@ -133,6 +157,8 @@ export function loadSavedLessonsFromLocalStorage(): SavedLessons{
         createSave,
         switchSave,
         removeSave,
+
+        moveSave,
     }
 
 }

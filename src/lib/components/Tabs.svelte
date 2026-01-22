@@ -13,21 +13,20 @@
 
   const {tabIds, tabIdValue, selectedContent, tabContent, onTabChange}: Props = $props();
 
-  const tabs = new Tabs<string>(
-    {
-        value: tabIdValue,
-        onValueChange: onTabChange,
-    }
-);
+  const tabs =  new Tabs<string>(
+        {
+            value: tabIdValue,
+            onValueChange: onTabChange,
+        }
+      );
+
 </script>
 
 <div class="tabs">
     <div class="tabs__triggers" {...tabs.triggerList}>
       {#each tabIds as id}
         <div class="tabs__trigger" {...tabs.getTrigger(id)}>
-          <div class={tabs.value === id ? "" : "--pulse-on-hover"}>
-              {@render tabContent(id)}
-          </div>
+            <div>{@render tabContent(id)}</div>
         </div>
       {/each}
     </div>
