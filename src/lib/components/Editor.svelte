@@ -174,7 +174,7 @@
     }
 
     const duplicateTimetable = () => {
-        savedLessons.createSave(`${currentManager?.getSaveName()} (másolat)`, currentManager?.getLessons());
+        savedLessons.createSave(`${currentManager?.getSaveName()} (másolat)`, $state.snapshot(currentManager?.getLessons()));
 
         timetableCopyTargetId = "done";
         setTimeout(() => {
