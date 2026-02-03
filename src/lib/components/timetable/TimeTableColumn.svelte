@@ -11,15 +11,21 @@
         minTime: Time,
         maxTime: Time,
         day: DayOfWeek,
-        dayIdx: number
+        dayIdx: number,
+        fastOrdering?: boolean
     };
 
-    const {datas, element, minTime, maxTime, day, dayIdx}: Props = $props();
+    const {datas, element, minTime, maxTime, day, dayIdx, fastOrdering=false}: Props = $props();
 
-    const sortedDatas = $derived(datas.toSorted((a, b) => 
-        timeToNumber(maxTime) * (timeToNumber(a.time.startTime) - timeToNumber(b.time.startTime)) +
-        timeToNumber(b.time.endTime) - timeToNumber(a.time.endTime) 
-    ));
+    const sortedDatas = $derived(
+        // fastOrdering ? 
+        //     datas 
+        // : 
+        datas.toSorted((a, b) => 
+            timeToNumber(maxTime) * (timeToNumber(a.time.startTime) - timeToNumber(b.time.startTime)) +
+            timeToNumber(b.time.endTime) - timeToNumber(a.time.endTime) 
+        )
+    );
 
     const isDataInBlock = (blockColumn: number, blockTopTime: Time, blockBottomTime: Time, element: PlacedTimeTableData<T>) => {
         const blockTopValue = timeToNumber(blockTopTime);
@@ -159,6 +165,10 @@
             });
         }
 
+        if(fastOrdering){
+            return [returned, columns];
+        }
+
         {// Move left
             let moved = true;
 
@@ -194,20 +204,12 @@
                     }
                 }
 
-                // for (let i = 0; i < sortedReturend.length; i++){
-                //     if(fixed.has(i)){
-                //         sortedReturend[i].column += sortedReturend[i].span;
-                //         sortedReturend[i].span = 0;
-                //     }
-                // }
                 
                 for (let i = sortedReturend.length - 1; i >= 0; i--){
                     if(fixed.has(i)){
                         continue;
                     }
 
-                    // sortedReturend[i].column += sortedReturend[i].span;
-                    // sortedReturend[i].span = 0;
                     
                     moveNeighboursRight(sortedReturend[i], sortedReturend, columns);
                     sortedReturend[i].span++;

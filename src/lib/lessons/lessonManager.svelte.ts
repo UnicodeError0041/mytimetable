@@ -13,7 +13,7 @@ export const SYMBOL_SAVED_LESSONS = Symbol("lessonManager");
 export const SYMBOL_OPEN_OPERATION_WARNING_MODAL = Symbol("openOperationWarningModal");
 export const SYMBOL_OPEN_LESSON_EXPORT_MODAL = Symbol("openLessonExportModal");
 
-export type LessonsManager = {
+export interface LessonsManager {
     getSaveId: () => string,
     getSaveName: () => string,
     setSaveName: (name: string) => void,

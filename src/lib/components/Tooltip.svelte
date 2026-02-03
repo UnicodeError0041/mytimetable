@@ -82,17 +82,23 @@
     }
 </script>
 
-<div class="tooltip__trigger {classes}" {...mergeAttrs(tooltip.trigger, {ondragenter: handleDragEnter, ondragleave: handleDragLeave, ondrop: handleDragLeave}, attrs)}>
+{#if triggerType === "none"}
+<div class="tooltip__trigger {classes}" {...attrs}>
     {@render children()}
 </div>
-<div class="tooltip" {...tooltip.content}>
-    <div class="tooltip__arrow" {...tooltip.arrow}></div>
-    <p class="tooltip__content">
-        {#if typeof content === "string"}
-            {content}
-        {:else}
-            {@render content()}
-        {/if}
-        
-    </p>
-</div>
+{:else}
+    <div class="tooltip__trigger {classes}" {...mergeAttrs(tooltip.trigger, {ondragenter: handleDragEnter, ondragleave: handleDragLeave, ondrop: handleDragLeave}, attrs)}>
+        {@render children()}
+    </div>
+    <div class="tooltip" {...tooltip.content}>
+        <div class="tooltip__arrow" {...tooltip.arrow}></div>
+        <p class="tooltip__content">
+            {#if typeof content === "string"}
+                {content}
+            {:else}
+                {@render content()}
+            {/if}
+            
+        </p>
+    </div>
+{/if}

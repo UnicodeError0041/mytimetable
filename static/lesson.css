@@ -144,7 +144,11 @@
 
 .timetable__element:has(.lesson){
     border-radius: 0.3rem;
+}
+
+.timetable__element:has(.lesson:not(.lesson--view-only)){
     opacity: 1;
+    
     transition: 
         opacity var(--to-300ms) ease-out,
         scale var(--to-100ms) ease-out,

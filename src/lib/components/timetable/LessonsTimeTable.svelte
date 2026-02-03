@@ -16,7 +16,8 @@
         ownLessons: LessonData[],
         timetableId: string,
         imageMode?: boolean,
-        tableState?: "default" | "drag", 
+        tableState?: "default" | "drag",
+        viewOnly?: boolean 
     };
 
     type LessonSource = "saved" | "queried" | "alternative"
@@ -26,7 +27,7 @@
         lessonData: LessonData,
     }
 
-    let {queriedLessons, ownLessons: savedLessons, timetableId, imageMode, tableState=$bindable("default")}: Props = $props();
+    let {queriedLessons, ownLessons: savedLessons, timetableId, imageMode, tableState=$bindable("default"), viewOnly=false}: Props = $props();
 
 
     let alternativeLessons: LessonData[] = $state([]);
@@ -91,7 +92,9 @@
     const alternativesCtx = getContext<LessonAlternatives>(SYMBOL_LESSON_ALTERNATIVES);
 
     const addAllAlternatives = () => {
-        savedLessons.forEach(l => alternativesCtx.addAlternativesToLesson(l.lesson));
+        if (!viewOnly){
+            savedLessons.forEach(l => alternativesCtx.addAlternativesToLesson(l.lesson));
+        }
     }
 
     $effect(() => {
@@ -237,6 +240,7 @@
 {#snippet element(data: SourcedLessonData)}
     {@const isLecture = data.lessonData.lesson.courseType === "előadás"}
     {@const isEdited = data.lessonData.edited === true}
+    {@const lessonViewOnly = viewOnly ? "lesson--view-only" : ""}
 
     {#if data.source === "saved"}
         {#snippet savedLessonTooltipContent()}
@@ -281,7 +285,7 @@
             </Tooltip>
         {/snippet}
 
-        <Lesson lesson={data.lessonData.lesson} {isEdited} classes="lesson--saved --pulse-on-hover {isLecture ? "lesson--lecture" : ""}"
+        <Lesson lesson={data.lessonData.lesson} {isEdited} classes="lesson--saved --pulse-on-hover {lessonViewOnly} {isLecture ? "lesson--lecture" : ""}"
             extraTooltipElement={savedLessonTooltipContent}
             attrs={
             {
@@ -289,10 +293,10 @@
                 ondragstart: (e: DragEvent) => dragStartHandler(e, data.lessonData), 
                 ondragend: dragEndHandler,
             }}
-            triggerType={tableState === "drag" ? "none" : "hover"}
+            triggerType={tableState === "drag" || viewOnly ? "none" : "hover"}
         />
     {:else if data.source === "queried"}
-        <Lesson lesson={data.lessonData.lesson} {isEdited} classes="lesson--queried --pulse-on-hover {isLecture ? "lesson--lecture" : ""}"
+        <Lesson lesson={data.lessonData.lesson} {isEdited} classes="lesson--queried --pulse-on-hover {lessonViewOnly} {isLecture ? "lesson--lecture" : ""}"
             extraTooltipElement="Kattints a hozzáadáshoz!"
             attrs={
             {
@@ -301,7 +305,7 @@
             triggerType="hover"
         />
     {:else if data.source === "alternative"}
-        <Lesson lesson={data.lessonData.lesson} {isEdited} classes="lesson--alternative --pulse {isLecture ? "lesson--lecture" : ""}"
+        <Lesson lesson={data.lessonData.lesson} {isEdited} classes="lesson--alternative --pulse {lessonViewOnly} {isLecture ? "lesson--lecture" : ""}"
             triggerType="both"
             extraTooltipElement="Dobd ide az órát az áthelyezéshez!"   
             attrs={
@@ -324,6 +328,7 @@
             style={{heightPerHour: imageMode ? "5rem": "3.5rem"}}
             days={["h", "k", "s", "c", "p"]}
             element={element}
+            fastOrdering={viewOnly}
         />
     </div>
     <div class="lesson-timetable__remove-lesson --pulse

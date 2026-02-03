@@ -14,10 +14,11 @@
         style?: {
             heightPerHour?: Unit<LengthUnitSuffix>,
             hourSubdivide?: number
-        }
+        },
+        fastOrdering?: boolean
     };
 
-    const {datas, element, minTime, maxTime, days, style}: Props = $props();
+    const {datas, element, minTime, maxTime, days, style, fastOrdering=false}: Props = $props();
     
     const dataPerDays = $derived.by(() => {
         let returned = new Map<string, TimeTableData<T>[]>();
@@ -73,7 +74,7 @@
             {/each}
         </div>
         {#each days as day, i}
-            <TimeTableColumn dayIdx={i} day={day} minTime={minTime} maxTime={maxTime} element={element} datas={dataPerDays.get(day) ?? []} />
+            <TimeTableColumn dayIdx={i} day={day} minTime={minTime} maxTime={maxTime} element={element} datas={dataPerDays.get(day) ?? []} fastOrdering={fastOrdering}/>
         {/each}
     </div>
 </div>

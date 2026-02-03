@@ -65,7 +65,7 @@ export function loadSavedLessonsFromLocalStorage(): SavedLessons{
         }
 
         lessons ??= [];
-        name ??= "Új órarend";
+        name ??= Math.random() < 0.05 ? "Vesztettél" : "Új órarend";
 
         const id = uuidv4();
 

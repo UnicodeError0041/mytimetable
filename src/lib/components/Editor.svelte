@@ -14,6 +14,7 @@
 	import { encodeURI } from "$lib/lessons/encode";
 	import Combobox from "./inputs/Combobox.svelte";
 	import type { defaultServerMainFields } from "vite";
+	import { createBadAppleLessonManager, type BadAppleLessonManager } from "$lib/lessons/badAppleLessonManager.svelte";
 
 
     let deleteTimetableDialogElement: HTMLDialogElement = $state(null!);
@@ -63,6 +64,53 @@
 
     const canUndo = $derived(currentManager !== null ? currentManager.canUndo() : false);
     const canRedo = $derived(currentManager !== null ? currentManager.canRedo() : false);
+
+    let badAppleManager: BadAppleLessonManager = $state(undefined!);
+
+    const badAppleLessons: LessonData[] = $derived(badAppleManager === undefined ? [] : badAppleManager.getLessons());
+
+    let audioPlayer: HTMLAudioElement = $state(null!);
+    
+    // let audioPromise: Promise<void> = null!
+    // if(browser){
+    //     audioPromise = new Promise<void>((resolve, reject) => {
+    //         audioPlayer.addEventListener("canplay", e => {
+    //             resolve();
+    //         })
+    //     }
+    // );
+    // }
+
+
+    const handleBadAppleClick = async () => {
+
+        if(!badAppleManager){
+            badAppleManager = createBadAppleLessonManager();
+            await badAppleManager.loadingPromise();
+        }
+
+        if(audioPlayer.readyState != 4){
+            console.log("waiting for audio")
+            const audioPromise = new Promise<void>((resolve, reject) => {
+                audioPlayer.addEventListener("canplay", e => {
+                    resolve();
+                })
+            })
+            await audioPromise;
+        }
+
+        
+
+        if(badAppleManager.isPlaying()){
+            badAppleManager.cancel();
+            audioPlayer.pause();
+            audioPlayer.currentTime = 0;
+            audioPlayer.pause();
+        } else {
+            badAppleManager.start();
+            audioPlayer.play();
+        }
+    }
 
     let draggedTabId: string | null = $state(null);
 
@@ -295,6 +343,7 @@
 
 {#snippet editor(tabId: string)}
     {@const id = savedLessons.getSaveIds()[Number(tabId)]}
+    {@const isBadApple = savedLessons.getSaveNameForId(id)?.toLowerCase().trim() == "bad apple"}
 
     <div class="editor">
         {#if !showQueriedLessons}
@@ -307,6 +356,56 @@
         <div class="editor__buttons">
             
             <div>
+                {#if isBadApple}
+                    <Tooltip content={badAppleManager?.isPlaying() ? "Leállítás" : "Lejátszás"}>
+                        <button aria-label={badAppleManager?.isPlaying() ? "leállítás" : "lejátszás"} class="icon-text button --pulse-on-hover" 
+                            onclick={handleBadAppleClick}
+                            disabled={badAppleManager !== undefined && badAppleManager.isLoading()}
+                        >
+                            <div class={
+                                badAppleManager?.isPlaying() ? 
+                                    "ix--stop" 
+                                : badAppleManager?.isLoading() ?
+                                    "ix--draw-circle-arc --spinning"
+                                :
+                                    "ix--play"
+                                }
+                            >
+                            </div>
+                        </button>
+                    </Tooltip>
+
+                    <!-- <Tooltip content={"Megállítás"}>
+                        <button aria-label={"megállítás"} class="icon-text button --pulse-on-hover" 
+                            onclick={() => badAppleManager.pause()}
+                            disabled={badAppleManager !== undefined && badAppleManager.isLoading()}
+                        >
+                            <span class="ix--play"></span>
+                            <p>Stop</p>
+                        </button>
+                    </Tooltip>
+
+                    <Tooltip content={"Kövi képkocka"}>
+                        <button aria-label={"Kövi képkocka"} class="icon-text button --pulse-on-hover" 
+                            onclick={() => badAppleManager.nextFrame()}
+                            disabled={badAppleManager !== undefined && badAppleManager.isLoading()}
+                        >
+                            <span class="ix--play"></span>
+                            <p>Kövi képkocka</p>
+                        </button>
+                    </Tooltip>
+
+                    <Tooltip content={"Előző képkocka"}>
+                        <button aria-label={"Előző képkocka"} class="icon-text button --pulse-on-hover" 
+                            onclick={() => badAppleManager.prevFrame()}
+                            disabled={badAppleManager !== undefined && badAppleManager.isLoading()}
+                        >
+                            <span class="ix--play"></span>
+                            <p>Előző képkocka</p>
+                        </button>
+                    </Tooltip> -->
+                {/if}
+
                 {#if queriedLessons.length > 0}
                     <button class="icon-text button --pulse-on-hover" onclick={() => showQueriedLessons = !showQueriedLessons} disabled={isExporting}>
                         <span class={showQueriedLessons ? "ix--eye-cancelled" : "ix--eye"}></span>
@@ -351,7 +450,14 @@
         </div>
         {#if id === currentSaveId}
             <div class="editor__timetable-wrapper {isImageExporting ? "editor__timetable-wrapper--exporting" : ""}">
-                <LessonsTimeTable queriedLessons={shownQueriedLessons} ownLessons={currentSavedLessons} bind:tableState={tableState} imageMode={isImageExporting} timetableId={id}/>
+                <LessonsTimeTable 
+                    queriedLessons={isBadApple && badAppleManager?.isPlaying() ? [] : shownQueriedLessons} 
+                    ownLessons={isBadApple && badAppleManager?.isPlaying() ? badAppleLessons : currentSavedLessons} 
+                    bind:tableState={tableState} 
+                    imageMode={isImageExporting} 
+                    timetableId={id}
+                    viewOnly={isBadApple && badAppleManager?.isPlaying()}
+                />
             </div>
         {/if}
     </div>
@@ -412,6 +518,14 @@
                     <Tooltip content="Órarend törlése" classes="editor__active-tab-button-holder">
                         <button class="button button--icon --pulse-on-hover --error" aria-label="Órarend törlése" onclick={openDeleteSaveModal} disabled={isImageExporting}>
                             <div class="ix--trashcan"></div>
+                        </button>
+                    </Tooltip>
+                </div>
+            {:else}
+                <div>
+                    <Tooltip content="Órarend duplikálása" classes="editor__active-tab-button-holder">
+                        <button class="button button--icon --pulse-on-hover" aria-label="Órarend duplikálása" onclick={duplicateTimetable} disabled={isImageExporting}>
+                            <div class={timetableCopyTargetId == "done" ? "ix--single-check" : "ix--duplicate"}></div>
                         </button>
                     </Tooltip>
                 </div>
@@ -516,3 +630,8 @@
 </dialog>
 
 <LessonDialog bind:dialogOpenHandler={createLessonDialogOpenHandler} onSave={handleNewLesson} title="Saját óra hozzáadása"/>
+
+<audio 
+    bind:this={audioPlayer} 
+    src="bad_apple.mp3"
+></audio>

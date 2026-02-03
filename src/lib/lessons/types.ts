@@ -33,6 +33,22 @@ export type LessonData = {
     edited?: boolean
 }
 
+
+export type LessonBlock = {
+    lessonData: LessonData
+    order:number
+    start_time: number
+    end_time: number
+}
+
+
+export type LessonVideo = {
+    blocks: LessonBlock[]
+    fps: number
+    frame_count: number
+}
+    
+
 export function timeToString(time: Time): `${number}:${number}` {
     return `${time.hour.toLocaleString("hu-HU", {minimumIntegerDigits: 2})}:${time.minute.toLocaleString("hu-HU", {minimumIntegerDigits: 2})}` as `${number}:${number}`;
 }
