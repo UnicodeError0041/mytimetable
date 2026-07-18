@@ -1,104 +1,138 @@
 <script lang="ts">
-    import { mergeAttrs } from "melt";
-    import { Tooltip, type TooltipProps } from "melt/builders";
-	import type { Snippet } from "svelte";
-	import type { HTMLAttributes } from "svelte/elements";
+	import { mergeAttrs } from 'melt';
+	import { Tooltip, type TooltipProps } from 'melt/builders';
+	import type { Snippet } from 'svelte';
+	import type { HTMLAttributes } from 'svelte/elements';
 
-    type Props = {
-        content: string | Snippet,
-        children: Snippet,
-        config?: TooltipProps,
-        triggerType?: "hover" | "dragover" | "both" | "none",
-        classes?: string,
-        attrs?: HTMLAttributes<HTMLElement>
-    }
+	type Props = {
+		content: string | Snippet;
+		children: Snippet;
+		config?: TooltipProps;
+		triggerType?: 'hover' | 'dragover' | 'both' | 'none';
+		classes?: string;
+		attrs?: HTMLAttributes<HTMLElement>;
+	};
 
-    const {content, children, config, triggerType = "hover", classes="", attrs={}}: Props = $props();
+	const {
+		content,
+		children,
+		config,
+		triggerType = 'hover',
+		classes = '',
+		attrs = {}
+	}: Props = $props();
 
-    let shouldBeOpen = $state(false);
+	let shouldBeOpen = $state(false);
 
-    const open = $derived(triggerType === "none" ? false : shouldBeOpen);
+	const open = $derived(triggerType === 'none' ? false : shouldBeOpen);
 
-    let dragTriggered = false;
+	let dragTriggered = false;
 
-    const tooltipProps: TooltipProps = {...config, open: () => open, onOpenChange: value => {
+	const tooltipProps: TooltipProps = {
+		closeOnPointerDown: true,
+		...config,
+		open: () => open,
+		onOpenChange: (value) => {
+			if (!value) {
+				shouldBeOpen = value;
+				return;
+			}
 
-        if (!value){
-            shouldBeOpen = value;
-            return;
-        }
+			if (
+				(triggerType === 'hover' && dragTriggered) ||
+				(triggerType === 'dragover' && !dragTriggered)
+			) {
+				return;
+			}
+			shouldBeOpen = value;
+		}
+	};
 
-        if ((triggerType === "hover" && dragTriggered) || (triggerType === "dragover" && !dragTriggered)){
-            return;
-        }
-        shouldBeOpen = value;
-    }}
-    
+	const tooltip = new Tooltip(tooltipProps);
 
-    const tooltip = new Tooltip(tooltipProps);
+	let trigger: EventTarget | null = null;
 
-    let trigger: EventTarget | null = null;
+	let openId: NodeJS.Timeout | null = null;
+	let closeId: NodeJS.Timeout | null = null;
 
-    let openId: NodeJS.Timeout | null = null;
-    let closeId: NodeJS.Timeout | null = null;
+	const handleDragEnter = (e: DragEvent) => {
+		if (triggerType == 'hover') {
+			return;
+		}
 
-    const handleDragEnter = (e: DragEvent) => {
-        if (triggerType == "hover"){
-            return;
-        }
+		trigger = e.target;
 
-        trigger = e.target;
+		e.stopPropagation();
+		e.preventDefault();
 
-        e.stopPropagation();
-        e.preventDefault();
+		if (closeId != null) {
+			clearTimeout(closeId);
+		}
 
-        if(closeId != null){
-            clearTimeout(closeId);
-        }
+		openId = setTimeout(() => {
+			dragTriggered = true;
+			tooltip.open = true;
+			dragTriggered = false;
+		}, tooltip.openDelay);
+	};
 
-        openId = setTimeout(() => {
-            dragTriggered = true; 
-            tooltip.open = true; 
-            dragTriggered = false;
-        }, tooltip.openDelay);
-    }
+	const handleDragLeave = (e: DragEvent) => {
+		if (triggerType === 'hover' || trigger !== e.target) {
+			return;
+		}
 
-    const handleDragLeave = (e: DragEvent) => {
-        if (triggerType === "hover" || trigger !== e.target){
-            return;
-        }
+		e.stopPropagation();
+		e.preventDefault();
 
-        e.stopPropagation();
-        e.preventDefault();
+		if (openId != null) {
+			clearTimeout(openId);
+		}
 
-        if(openId!= null){
-            clearTimeout(openId);
-        }
+		closeId = setTimeout(
+			() => {
+				tooltip.open = false;
+			},
+			tooltip.open ? tooltip.closeDelay : tooltip.openDelay
+		);
+	};
 
-        closeId = setTimeout(() => {
-            tooltip.open = false;
-        }, tooltip.open ? tooltip.closeDelay : tooltip.openDelay);
- 
-    }
+	const handleOnTouchEnd = (e: TouchEvent) => {
+		if (triggerType == 'none') {
+			return;
+		}
+
+		tooltip.open = true;
+	};
 </script>
 
-{#if triggerType === "none"}
-<div class="tooltip__trigger {classes}" {...attrs}>
-    {@render children()}
-</div>
+{#if triggerType === 'none'}
+	<div class="tooltip__trigger {classes}" {...attrs}>
+		{@render children()}
+	</div>
 {:else}
-    <div class="tooltip__trigger {classes}" {...mergeAttrs(tooltip.trigger, {ondragenter: handleDragEnter, ondragleave: handleDragLeave, ondrop: handleDragLeave}, attrs)}>
-        {@render children()}
-    </div>
-    <div class="tooltip" {...tooltip.content}>
-        <div class="tooltip__arrow" {...tooltip.arrow}></div>
-        <p class="tooltip__content">
-            {#if typeof content === "string"}
-                {content}
-            {:else}
-                {@render content()}
-            {/if}
-            
-        </p>
-    </div>
+	<div
+		class="tooltip__trigger {classes}"
+		{...mergeAttrs(
+			tooltip.trigger,
+			{
+				ondragenter: handleDragEnter,
+				ondragleave: handleDragLeave,
+				ondrop: handleDragLeave,
+				ontouchend: handleOnTouchEnd
+			},
+			attrs
+		)}
+	>
+		{@render children()}
+	</div>
+	<div class="tooltip" {...tooltip.content}>
+		<div class="tooltip__arrow" {...tooltip.arrow}></div>
+		<p class="tooltip__content">
+			{#if typeof content === 'string'}
+				{content}
+			{:else}
+				{@render content()}
+			{/if}
+		</p>
+	</div>
 {/if}

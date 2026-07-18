@@ -1,7 +1,10 @@
 .icon-text{
     display: grid;
     grid-template-columns: 1.5rem 1fr;
+    grid-template-rows: 1fr;
     gap: 0.3rem;
+
+    justify-items: stretch;
 }
 
 .icon{

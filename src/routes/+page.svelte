@@ -1,67 +1,72 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { page }  from '$app/state';
-	import {replaceState} from '$app/navigation';
+	import { page } from '$app/state';
+	import { replaceState } from '$app/navigation';
 
 	import Editor from '$lib/components/Editor.svelte';
 	import Search from '$lib/components/Search.svelte';
-	import { createLessonAlternatives, SYMBOL_LESSON_ALTERNATIVES, type LessonAlternatives } from '$lib/lessons/lessonAlternatives.svelte';
-	import { SYMBOL_SAVED_LESSONS} from '$lib/lessons/lessonManager.svelte';
+	import {
+		createLessonAlternatives,
+		SYMBOL_LESSON_ALTERNATIVES,
+		type LessonAlternatives
+	} from '$lib/lessons/lessonAlternatives.svelte';
+	import { SYMBOL_SAVED_LESSONS } from '$lib/lessons/lessonManager.svelte';
 	import { SYMBOL_LESSONS_QUERY, type QueryData } from '$lib/lessons/query';
-	import { loadSavedLessonsFromLocalStorage, type SavedLessons } from '$lib/lessons/savedLessons.svelte';
-	import {setContext } from 'svelte';
-	import {decodeURI} from "$lib/lessons/encode"
-	import {MD5 as md5} from "object-hash"
-	import { json } from '@sveltejs/kit';
+	import {
+		loadSavedLessonsFromLocalStorage,
+		type SavedLessons
+	} from '$lib/lessons/savedLessons.svelte';
+	import { setContext } from 'svelte';
+	import { decodeURI } from '$lib/lessons/encode';
 
 	const savedLessons = loadSavedLessonsFromLocalStorage();
-    
-    setContext<SavedLessons>(SYMBOL_SAVED_LESSONS, savedLessons);
 
-    let query: QueryData = $state({queriedLessons: null});
-    
-    setContext<QueryData>(SYMBOL_LESSONS_QUERY, query);
+	setContext<SavedLessons>(SYMBOL_SAVED_LESSONS, savedLessons);
+
+	let query: QueryData = $state({ queriedLessons: null });
+
+	setContext<QueryData>(SYMBOL_LESSONS_QUERY, query);
 
 	setContext<LessonAlternatives>(SYMBOL_LESSON_ALTERNATIVES, createLessonAlternatives());
 
-	if(browser){
-    	const param = page.url.searchParams.get('data');
+	if (browser) {
+		const param = page.url.searchParams.get('data');
 
-		if (param){
+		if (param) {
 			const lessonSave = decodeURI(param);
 
 			lessonSave.lessons.sort((a, b) => a.id.localeCompare(b.id));
 
-			const sameLessons = savedLessons.getSaveIds().filter(
-				id => {
-					if (savedLessons.getSaveNameForId(id) !== `Velem megosztott: ${lessonSave.saveName}`){
-						return false;
-					}
-					
-					savedLessons.switchSave(id);
-					// console.log($state.snapshot(savedLessons.getCurrentManager().getLessons()));
-					let returned =  JSON.stringify(
-						$state.snapshot(
-							savedLessons.getCurrentManager().getLessons()).toSorted((a, b) => a.id.localeCompare(b.id)
-						)
-					) ===  JSON.stringify(lessonSave.lessons);
-					// console.log(returned);
-					return returned;
+			const sameLessons = savedLessons.getSaveIds().filter((id) => {
+				if (savedLessons.getSaveNameForId(id) !== `Velem megosztott: ${lessonSave.saveName}`) {
+					return false;
 				}
-				
-			);
+
+				savedLessons.switchSave(id);
+				// console.log($state.snapshot(savedLessons.getCurrentManager().getLessons()));
+				let returned =
+					JSON.stringify(
+						$state
+							.snapshot(savedLessons.getCurrentManager().getLessons())
+							.toSorted((a, b) => a.id.localeCompare(b.id))
+					) === JSON.stringify(lessonSave.lessons);
+				// console.log(returned);
+				return returned;
+			});
 
 			console.log(sameLessons);
 
-			if (sameLessons.length == 0){
-				const id = savedLessons.createSave(`Velem megosztott: ${lessonSave.saveName}`, lessonSave.lessons);
+			if (sameLessons.length == 0) {
+				const id = savedLessons.createSave(
+					`Velem megosztott: ${lessonSave.saveName}`,
+					lessonSave.lessons
+				);
 
 				if (id) savedLessons.switchSave(id);
 			} else {
 				savedLessons.switchSave(sameLessons[0]);
 			}
 		}
-
 	}
 </script>
 
@@ -69,6 +74,5 @@
 	<title>Easy Timetable</title>
 </svelte:head>
 
-<Search/>
-<Editor/>
-
+<Search />
+<Editor />

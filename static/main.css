@@ -110,7 +110,7 @@ body{
 }
 
 main{
-  --body-padding: 4rem;
+   --body-padding: clamp(1rem, 2vw, 4rem);
   padding: var(--body-padding);
 }
 
@@ -121,6 +121,7 @@ nav{
 }
 
 footer{
+  text-align: center;
   padding-bottom: 4rem;
 }
 

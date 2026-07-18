@@ -1,46 +1,58 @@
 <script lang="ts">
-  import { browser } from '$app/environment'
-  import { QueryClient } from '@tanstack/svelte-query'
-  import { SvelteQueryDevtools } from '@tanstack/svelte-query-devtools'
-  import { PersistQueryClientProvider } from '@tanstack/svelte-query-persist-client'
-  import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
-  import { injectAnalytics } from '@vercel/analytics/sveltekit'
-  import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
-  import {ModeWatcher, toggleMode, mode} from 'mode-watcher';
+	import { browser } from '$app/environment';
+	import { QueryClient } from '@tanstack/svelte-query';
+	import { SvelteQueryDevtools } from '@tanstack/svelte-query-devtools';
+	import { PersistQueryClientProvider } from '@tanstack/svelte-query-persist-client';
+	import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
+	import { injectAnalytics } from '@vercel/analytics/sveltekit';
+	import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
+	import { ModeWatcher, toggleMode, mode } from 'mode-watcher';
 
-  injectSpeedInsights();
+	injectSpeedInsights();
 
-  injectAnalytics();
+	injectAnalytics();
 
-  let {children} = $props();
-  
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        enabled: browser,
-      },
-    },
-  })
+	let { children } = $props();
 
-  const persister = createAsyncStoragePersister({
-    storage: browser ? window.localStorage : null,
-  })
+	const queryClient = new QueryClient({
+		defaultOptions: {
+			queries: {
+				enabled: browser
+			}
+		}
+	});
+
+	const persister = createAsyncStoragePersister({
+		storage: browser ? window.localStorage : null
+	});
 </script>
-<ModeWatcher darkClassNames={["dark-mode"]} lightClassNames={["light-mode"]}/>
+
+<ModeWatcher darkClassNames={['dark-mode']} lightClassNames={['light-mode']} />
 
 <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
-  <nav>
-    <button class="button button--icon --pulse-on-hover --fs-h5" onclick={toggleMode} aria-label="sötét/világos mód">
-      <div class={mode.current === "dark" ? "ix--sun": "ix--moon"}></div>
-    </button>
-  </nav>
-  <main>
-    {@render children()}
-  </main>
-  <footer>
-    <p>Az adatok az ELTE Tanulmányi Osztály adatbázisából származnak</p>
-    <div class="icon --fs-h3"><a class="ix--github-logo" target="_blank" href="https://github.com/UnicodeError0041/mytimetable" aria-label="GitHub"></a></div>
-    <a href="/privacy">Adatvédelem</a>
-  </footer>
-  <SvelteQueryDevtools />
+	<nav>
+		<button
+			class="button button--icon --pulse-on-hover --fs-h5"
+			onclick={toggleMode}
+			aria-label="sötét/világos mód"
+		>
+			<div class={mode.current === 'dark' ? 'ix--sun' : 'ix--moon'}></div>
+		</button>
+	</nav>
+	<main>
+		{@render children()}
+	</main>
+	<footer>
+		<p>Az adatok az ELTE Tanulmányi Osztály adatbázisából származnak</p>
+		<div class="icon --fs-h3">
+			<a
+				class="ix--github-logo"
+				target="_blank"
+				href="https://github.com/UnicodeError0041/mytimetable"
+				aria-label="GitHub"
+			></a>
+		</div>
+		<a href="/privacy">Adatvédelem</a>
+	</footer>
+	<SvelteQueryDevtools />
 </PersistQueryClientProvider>

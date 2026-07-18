@@ -20,13 +20,19 @@
 
     > * {
         display: flex;
+        flex-grow: 1;
         flex-wrap: wrap;
         gap: 1rem;
     }
 }
 
+.editor__undo-redo-buttons{
+    justify-content: flex-end;
+}
+
 .editor__text-input{
     translate: 0 0.2rem;
+    max-width: 40vw;
 }
 
 .editor__active-tab,
@@ -48,6 +54,8 @@
 .editor__active-tab-button-holder{
     display: grid;
     align-items: center;
+    aspect-ratio: 1;
+    min-width: fit-content;
 
     > button{
         padding: 0.25rem;
