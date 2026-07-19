@@ -1,22 +1,28 @@
+<script lang="ts">
+	import { m } from '$lib/paraglide/messages.js';
+</script>
+
 <svelte:head>
-  <title>Adatkezelési tájékoztató</title>
-  <meta name="description" content="Ez az oldal a Vercel Analytics és Vercel Speed Insights szolgáltatásait használja forgalom és teljesítmény mérésére, személyes adatok gyűjtése nélkül." />
+	<title>{m.privacy_title()}</title>
+	<meta name="description" content={m.privacy_description()} />
 </svelte:head>
 
-<h1>Adatkezelési tájékoztató</h1>
+<h1>{m.privacy_title()}</h1>
 
 <p>
-  Ez a weboldal a <a href="https://vercel.com/docs/analytics/privacy-policy">Vercel Analytics</a> és 
-  <a href="https://vercel.com/docs/speed-insights/privacy-policy">Vercel Speed Insights</a> szolgáltatásait használja 
-  a forgalom és a teljesítmény mérésére.
+	This website uses <a href="https://vercel.com/docs/analytics/privacy-policy">Vercel Analytics</a>
+	and
+	<a href="https://vercel.com/docs/speed-insights/privacy-policy">Vercel Speed Insights</a>
+	to measure traffic and performance.
 </p>
 
 <p>
-  Ezek az eszközök <strong>nem használnak sütiket, és nem gyűjtenek személyazonosításra alkalmas adatokat.</strong>
-  Az összegyűjtött adatok kizárólag összesített formában kerülnek felhasználásra a weboldal sebességének, 
-  tartalmának és felhasználói élményének javítása érdekében.
+	These tools <strong
+		>do not use cookies and do not collect personally identifiable information.</strong
+	>
+	The collected data are used only in aggregated form to improve the site’s speed, content, and user experience.
 </p>
 
 <p>
-  Ez csak egy kis, nyílt forráskódú hobbi projekt.
+	{m.privacy_open_source_text()}
 </p>

@@ -114,10 +114,26 @@ main{
   padding: var(--body-padding);
 }
 
-nav{
+.nav{
   display: flex;
-  flex-direction: row-reverse;
+  flex-direction: row;
   padding: 0.5rem;
+}
+
+.nav__buttons{
+  display: flex;
+  margin-left: auto;
+  gap: 1rem;
+}
+
+.nav__title{
+  text-decoration: none;
+  color: var(--clr-primary);
+  font-weight: 500;
+
+  &:visited, &:hover {
+    color: var(--clr-primary);
+  }
 }
 
 footer{

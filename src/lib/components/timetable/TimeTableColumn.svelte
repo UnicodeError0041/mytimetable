@@ -1,245 +1,295 @@
 <script lang="ts" generics="T">
-    import { dayOfWeekToString, timeToNumber, type DayOfWeek, type Time } from "$lib/lessons/types";
-	import type { Snippet } from "svelte";
-    import type { PlacedTimeTableData, PlacementData, TimeTableData } from "./types"
-	import {lcm} from "$lib/utility.svelte";
-	import TimeTableElement from "./TimeTableElement.svelte";
+	import { timeToNumber, type DayOfWeek, type Time } from '$lib/lessons/types';
+	import type { Snippet } from 'svelte';
+	import type { PlacedTimeTableData, PlacementData, TimeTableData } from './types';
+	import { lcm } from '$lib/utility.svelte';
+	import TimeTableElement from './TimeTableElement.svelte';
+	import { dayOfWeekToLocalizedString } from '$lib/lessons/localization.svelte';
 
-    type Props = {
-        datas: TimeTableData<T>[]
-        element: Snippet<[T]>,
-        minTime: Time,
-        maxTime: Time,
-        day: DayOfWeek,
-        dayIdx: number,
-        fastOrdering?: boolean
-    };
+	type Props = {
+		datas: TimeTableData<T>[];
+		element: Snippet<[T]>;
+		minTime: Time;
+		maxTime: Time;
+		day: DayOfWeek;
+		dayIdx: number;
+		fastOrdering?: boolean;
+	};
 
-    const {datas, element, minTime, maxTime, day, dayIdx, fastOrdering=false}: Props = $props();
+	const { datas, element, minTime, maxTime, day, dayIdx, fastOrdering = false }: Props = $props();
 
-    const sortedDatas = $derived(
-        // fastOrdering ? 
-        //     datas 
-        // : 
-        datas.toSorted((a, b) => 
-            timeToNumber(maxTime) * (timeToNumber(a.time.startTime) - timeToNumber(b.time.startTime)) +
-            timeToNumber(b.time.endTime) - timeToNumber(a.time.endTime) 
-        )
-    );
+	const sortedDatas = $derived(
+		// fastOrdering ?
+		//     datas
+		// :
+		datas.toSorted(
+			(a, b) =>
+				timeToNumber(maxTime) * (timeToNumber(a.time.startTime) - timeToNumber(b.time.startTime)) +
+				timeToNumber(b.time.endTime) -
+				timeToNumber(a.time.endTime)
+		)
+	);
 
-    const isDataInBlock = (blockColumn: number, blockTopTime: Time, blockBottomTime: Time, element: PlacedTimeTableData<T>) => {
-        const blockTopValue = timeToNumber(blockTopTime);
-        const blockBottomValue = timeToNumber(blockBottomTime);
+	const isDataInBlock = (
+		blockColumn: number,
+		blockTopTime: Time,
+		blockBottomTime: Time,
+		element: PlacedTimeTableData<T>
+	) => {
+		const blockTopValue = timeToNumber(blockTopTime);
+		const blockBottomValue = timeToNumber(blockBottomTime);
 
-        const topValue = timeToNumber(element.time.startTime);
-        const bottomValue = timeToNumber(element.time.endTime);
+		const topValue = timeToNumber(element.time.startTime);
+		const bottomValue = timeToNumber(element.time.endTime);
 
-        const startColumn = element.column;
-        const endColumn = element.column + element.span - 1;
+		const startColumn = element.column;
+		const endColumn = element.column + element.span - 1;
 
-        return !(blockColumn > endColumn || blockColumn < startColumn || bottomValue <= blockTopValue || topValue >= blockBottomValue);
-    }
+		return !(
+			blockColumn > endColumn ||
+			blockColumn < startColumn ||
+			bottomValue <= blockTopValue ||
+			topValue >= blockBottomValue
+		);
+	};
 
-    const isBlockEmpty = 
-        (blockColumn: number, columnCount: number, blockTopTime: Time, blockBottomTime: Time, elements: PlacedTimeTableData<T>[]) =>
-            blockColumn < 0 || blockColumn >= columnCount ?
-                false
-            :
-                !elements.some(e => isDataInBlock(blockColumn, blockTopTime, blockBottomTime, e));
-    
-    const elementsInBlock = 
-            (blockColumn: number, columnCount: number, blockTopTime: Time, blockBottomTime: Time, elements: PlacedTimeTableData<T>[]) =>
-                blockColumn < 0 || blockColumn >= columnCount ?
-                    [] 
-                : 
-                    elements.filter(e => isDataInBlock(blockColumn, blockTopTime, blockBottomTime, e));
-    
-    const getRightNeighbourIndicies = (element: PlacedTimeTableData<T>, elements: PlacedTimeTableData<T>[], columnCount: number) => {
-        let indicies: Set<number> = new Set();
+	const isBlockEmpty = (
+		blockColumn: number,
+		columnCount: number,
+		blockTopTime: Time,
+		blockBottomTime: Time,
+		elements: PlacedTimeTableData<T>[]
+	) =>
+		blockColumn < 0 || blockColumn >= columnCount
+			? false
+			: !elements.some((e) => isDataInBlock(blockColumn, blockTopTime, blockBottomTime, e));
 
-        const neighbours = elementsInBlock(element.column + element.span, columnCount, element.time.startTime, element.time.endTime, elements);
-        for(const neighbour of neighbours){
-            indicies.add(elements.findIndex(e => e === neighbour));
-            indicies = indicies.union(getRightNeighbourIndicies(neighbour, elements, columnCount));
-        }
+	const elementsInBlock = (
+		blockColumn: number,
+		columnCount: number,
+		blockTopTime: Time,
+		blockBottomTime: Time,
+		elements: PlacedTimeTableData<T>[]
+	) =>
+		blockColumn < 0 || blockColumn >= columnCount
+			? []
+			: elements.filter((e) => isDataInBlock(blockColumn, blockTopTime, blockBottomTime, e));
 
-        return indicies;
-    }
-    
-    const moveNeighboursRight = (element: PlacedTimeTableData<T>, elements: PlacedTimeTableData<T>[], columnCount: number) => {
-        const indicies = getRightNeighbourIndicies(element, elements, columnCount);
+	const getRightNeighbourIndicies = (
+		element: PlacedTimeTableData<T>,
+		elements: PlacedTimeTableData<T>[],
+		columnCount: number
+	) => {
+		let indicies: Set<number> = new Set();
 
-        for(const idx of indicies){
-            elements[idx].column++;
-        }
-    }
+		const neighbours = elementsInBlock(
+			element.column + element.span,
+			columnCount,
+			element.time.startTime,
+			element.time.endTime,
+			elements
+		);
+		for (const neighbour of neighbours) {
+			indicies.add(elements.findIndex((e) => e === neighbour));
+			indicies = indicies.union(getRightNeighbourIndicies(neighbour, elements, columnCount));
+		}
 
-    const [placementDatas, columns] = $derived.by(() => {
-        let returned: PlacedTimeTableData<T>[] = [];
-        let row: PlacedTimeTableData<T>[] = [];
-        let rows: PlacedTimeTableData<T>[][] = [];
+		return indicies;
+	};
 
-        let columns = 1;
-        
-        {// First pass
-            let minEndTimeValue = Infinity;
-            let minEndTimeIndex = 0;
+	const moveNeighboursRight = (
+		element: PlacedTimeTableData<T>,
+		elements: PlacedTimeTableData<T>[],
+		columnCount: number
+	) => {
+		const indicies = getRightNeighbourIndicies(element, elements, columnCount);
 
-            let maxEndTimeValue = -Infinity;
+		for (const idx of indicies) {
+			elements[idx].column++;
+		}
+	};
 
-        
-            for(const data of sortedDatas){
-                rows.push([...row]);
+	const [placementDatas, columns] = $derived.by(() => {
+		let returned: PlacedTimeTableData<T>[] = [];
+		let row: PlacedTimeTableData<T>[] = [];
+		let rows: PlacedTimeTableData<T>[][] = [];
 
-                let placementData = {...data, column: -1, neighbours: -1, span:-1};
-                returned.push(placementData);
+		let columns = 1;
 
-                let currentStartTimeValue = timeToNumber(data.time.startTime);
-                let currentEndTimeValue = timeToNumber(data.time.endTime);
+		{
+			// First pass
+			let minEndTimeValue = Infinity;
+			let minEndTimeIndex = 0;
 
-                if (currentStartTimeValue >= maxEndTimeValue){
-                    row = [];
+			let maxEndTimeValue = -Infinity;
 
-                    minEndTimeValue = Infinity;
-                    minEndTimeIndex = 0;
+			for (const data of sortedDatas) {
+				rows.push([...row]);
 
-                    maxEndTimeValue = -Infinity;
-                }
+				let placementData = { ...data, column: -1, neighbours: -1, span: -1 };
+				returned.push(placementData);
 
-                if (row.length === 0 || currentStartTimeValue < minEndTimeValue){
-                    row = [...row, placementData];
-                    placementData.column = row.length - 1;
-                    row.forEach(d => d.neighbours = Math.max(row.length, d.neighbours));
+				let currentStartTimeValue = timeToNumber(data.time.startTime);
+				let currentEndTimeValue = timeToNumber(data.time.endTime);
 
-                    if (currentEndTimeValue < minEndTimeValue){
-                        minEndTimeValue = currentEndTimeValue;
-                        minEndTimeIndex = placementData.column;
-                    }
+				if (currentStartTimeValue >= maxEndTimeValue) {
+					row = [];
 
-                    maxEndTimeValue = Math.max(maxEndTimeValue, currentEndTimeValue);
+					minEndTimeValue = Infinity;
+					minEndTimeIndex = 0;
 
-                    continue;
-                }
-                
-                
-                for(let i = 0; i < row.length; i++){
-                    if (timeToNumber(row[i].time.endTime) <= currentStartTimeValue){
-                        row[i] = placementData;
-                        placementData.column = i;
-                        break;
-                    }
-                }
+					maxEndTimeValue = -Infinity;
+				}
 
-                placementData.neighbours = row.length;
-                
-                minEndTimeValue = Infinity;
-                minEndTimeIndex = placementData.column;
+				if (row.length === 0 || currentStartTimeValue < minEndTimeValue) {
+					row = [...row, placementData];
+					placementData.column = row.length - 1;
+					row.forEach((d) => (d.neighbours = Math.max(row.length, d.neighbours)));
 
-                maxEndTimeValue = -Infinity;
+					if (currentEndTimeValue < minEndTimeValue) {
+						minEndTimeValue = currentEndTimeValue;
+						minEndTimeIndex = placementData.column;
+					}
 
-                for (let i = 0; i < row.length; i++){
-                    const value = timeToNumber(row[i].time.endTime);
+					maxEndTimeValue = Math.max(maxEndTimeValue, currentEndTimeValue);
 
-                    if(value < minEndTimeValue){
-                        minEndTimeValue = value;
-                        minEndTimeIndex = i;
-                    }
-                    maxEndTimeValue = Math.max(maxEndTimeValue, value);
-                }
-            }
+					continue;
+				}
 
-            rows.push([...row]);
-        }
-        
-        {// Second pass
-            for(let row_ of rows.reverse()){
-                const max = Math.max(...row_.map((d => d.neighbours)));
+				for (let i = 0; i < row.length; i++) {
+					if (timeToNumber(row[i].time.endTime) <= currentStartTimeValue) {
+						row[i] = placementData;
+						placementData.column = i;
+						break;
+					}
+				}
 
-                columns = max >= 1 ? lcm(max, columns) : columns;
-                row_.forEach(d => d.neighbours = max);
-            }
+				placementData.neighbours = row.length;
 
-            returned.forEach(d => {
-                d.span = columns / d.neighbours;
-                d.column *= d.span;
-            });
-        }
+				minEndTimeValue = Infinity;
+				minEndTimeIndex = placementData.column;
 
-        if(fastOrdering){
-            return [returned, columns];
-        }
+				maxEndTimeValue = -Infinity;
 
-        {// Move left
-            let moved = true;
+				for (let i = 0; i < row.length; i++) {
+					const value = timeToNumber(row[i].time.endTime);
 
-            while (moved){
-                moved = false;
+					if (value < minEndTimeValue) {
+						minEndTimeValue = value;
+						minEndTimeIndex = i;
+					}
+					maxEndTimeValue = Math.max(maxEndTimeValue, value);
+				}
+			}
 
-                for(let data of returned){
-                    if (isBlockEmpty(data.column - 1, columns, data.time.startTime, data.time.endTime, returned)){
-                        data.column--;
-                        moved = true;
-                    }
-                }
-            }
-        }
+			rows.push([...row]);
+		}
 
-        {// Extend right
-            let sortedReturend = returned.toSorted((a, b) => b.column + b.span - a.column - a.span);
-            let fixed: Set<number> = new Set();
-            
-                
-            while(fixed.size !== sortedReturend.length){
-                let sortedReturend = returned.toSorted((a, b) => b.column + b.span - a.column - a.span);
+		{
+			// Second pass
+			for (let row_ of rows.reverse()) {
+				const max = Math.max(...row_.map((d) => d.neighbours));
 
-                for(let i = 0; i < sortedReturend.length; i++){
-                    fixed.add(i);
-                }
+				columns = max >= 1 ? lcm(max, columns) : columns;
+				row_.forEach((d) => (d.neighbours = max));
+			}
 
-                for(let i = 0; i < sortedReturend.length; i++){
-                    const data = sortedReturend[i];
-                
-                    if (isBlockEmpty(data.column + data.span, columns, data.time.startTime, data.time.endTime, [...fixed].map(j => sortedReturend[j]))){
-                        fixed.delete(i);
-                    }
-                }
+			returned.forEach((d) => {
+				d.span = columns / d.neighbours;
+				d.column *= d.span;
+			});
+		}
 
-                
-                for (let i = sortedReturend.length - 1; i >= 0; i--){
-                    if(fixed.has(i)){
-                        continue;
-                    }
+		if (fastOrdering) {
+			return [returned, columns];
+		}
 
-                    
-                    moveNeighboursRight(sortedReturend[i], sortedReturend, columns);
-                    sortedReturend[i].span++;
+		{
+			// Move left
+			let moved = true;
 
-                    for(let j = 0; j < sortedReturend.length; j++){
-                        let data = sortedReturend[j];
+			while (moved) {
+				moved = false;
 
-                        if(fixed.has(j)){
-                            continue;
-                        }
-                    
-                        if (!isBlockEmpty(data.column + data.span, columns, data.time.startTime, data.time.endTime, [...fixed].map(k => sortedReturend[k]))){
-                            fixed.add(j);
-                        }
-                    }
-                }
-            }
-        }
+				for (let data of returned) {
+					if (
+						isBlockEmpty(data.column - 1, columns, data.time.startTime, data.time.endTime, returned)
+					) {
+						data.column--;
+						moved = true;
+					}
+				}
+			}
+		}
 
-        return [returned, columns];
-    });
+		{
+			// Extend right
+			let sortedReturend = returned.toSorted((a, b) => b.column + b.span - a.column - a.span);
+			let fixed: Set<number> = new Set();
 
+			while (fixed.size !== sortedReturend.length) {
+				let sortedReturend = returned.toSorted((a, b) => b.column + b.span - a.column - a.span);
+
+				for (let i = 0; i < sortedReturend.length; i++) {
+					fixed.add(i);
+				}
+
+				for (let i = 0; i < sortedReturend.length; i++) {
+					const data = sortedReturend[i];
+
+					if (
+						isBlockEmpty(
+							data.column + data.span,
+							columns,
+							data.time.startTime,
+							data.time.endTime,
+							[...fixed].map((j) => sortedReturend[j])
+						)
+					) {
+						fixed.delete(i);
+					}
+				}
+
+				for (let i = sortedReturend.length - 1; i >= 0; i--) {
+					if (fixed.has(i)) {
+						continue;
+					}
+
+					moveNeighboursRight(sortedReturend[i], sortedReturend, columns);
+					sortedReturend[i].span++;
+
+					for (let j = 0; j < sortedReturend.length; j++) {
+						let data = sortedReturend[j];
+
+						if (fixed.has(j)) {
+							continue;
+						}
+
+						if (
+							!isBlockEmpty(
+								data.column + data.span,
+								columns,
+								data.time.startTime,
+								data.time.endTime,
+								[...fixed].map((k) => sortedReturend[k])
+							)
+						) {
+							fixed.add(j);
+						}
+					}
+				}
+			}
+		}
+
+		return [returned, columns];
+	});
 </script>
-<div class="timetable__column" style="--day-idx: {dayIdx};">
-    <p class="timetable__column-day">{dayOfWeekToString(day)}</p>
-    <div class="timetable__column-content" style="--columns: {columns};"
-    >
-        {#each placementDatas as data}
-            <TimeTableElement placementData={data} element={element} minTime={minTime} maxTime={maxTime}/>
-        {/each}
-    </div>
-</div>
 
+<div class="timetable__column" style="--day-idx: {dayIdx};">
+	<p class="timetable__column-day">{dayOfWeekToLocalizedString(day)}</p>
+	<div class="timetable__column-content" style="--columns: {columns};">
+		{#each placementDatas as data}
+			<TimeTableElement placementData={data} {element} {minTime} {maxTime} />
+		{/each}
+	</div>
+</div>

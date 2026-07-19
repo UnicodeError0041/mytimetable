@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import { m } from '$lib/paraglide/messages.js';
 	import {
 		SYMBOL_OPEN_LESSON_EXPORT_MODAL as SYMBOL_OPEN_LESSON_COPY_MODAL,
 		SYMBOL_OPEN_OPERATION_WARNING_MODAL,
@@ -169,7 +170,7 @@
 			url.searchParams.delete('data');
 			url.searchParams.append('data', encodeURI(currentManager?.getLessonSave() as LessonSave));
 
-			exportUrl = `Helló! Nézd meg a ${currentManager?.getSaveName()} órarendemet itt: ${url.toString()}`;
+			exportUrl = `${url.toString()}`;
 
 			urlExportDialogElement.showModal();
 
@@ -238,7 +239,7 @@
 
 	const duplicateTimetable = () => {
 		savedLessons.createSave(
-			`${currentManager?.getSaveName()} (másolat)`,
+			`${currentManager?.getSaveName()} (${m.this_is_a_copy()})`,
 			$state.snapshot(currentManager?.getLessons())
 		);
 
@@ -362,16 +363,16 @@
 		{#if !showQueriedLessons}
 			<div class="icon-text">
 				<span class="ix--info"></span>
-				<p>A keresési találatok megjelenítése ki van kapcsolva</p>
+				<p>{m.hidden_results()}</p>
 			</div>
 		{/if}
 
 		<div class="editor__buttons">
 			<div>
 				{#if isBadApple}
-					<Tooltip content={badAppleManager?.isPlaying() ? 'Leállítás' : 'Lejátszás'}>
+					<Tooltip content={badAppleManager?.isPlaying() ? m.lesson_stop() : m.lesson_play()}>
 						<button
-							aria-label={badAppleManager?.isPlaying() ? 'leállítás' : 'lejátszás'}
+							aria-label={badAppleManager?.isPlaying() ? m.lesson_stop() : m.lesson_play()}
 							class="icon-text button --pulse-on-hover"
 							onclick={handleBadAppleClick}
 							disabled={badAppleManager !== undefined && badAppleManager.isLoading()}
@@ -424,7 +425,7 @@
 						disabled={isExporting}
 					>
 						<span class={showQueriedLessons ? 'ix--eye-cancelled' : 'ix--eye'}></span>
-						<p>Találatok {showQueriedLessons ? 'elrejtése' : 'megjelenítése'}</p>
+						<p>{showQueriedLessons ? m.hide_results() : m.show_results()}</p>
 					</button>
 				{/if}
 
@@ -441,7 +442,7 @@
 									: 'ix--draw-circle-arc --spinning'
 								: 'ix--image'}
 						></span>
-						<p>Exportálás képként</p>
+						<p>{m.export_as_image()}</p>
 					</button>
 					<button
 						class="icon-text button --pulse-on-hover"
@@ -456,10 +457,10 @@
 								: 'ix--link'}
 						></span>
 						<p>
-							{#if isExportDone}
-								URL legenerálva
+							{#if isExportDone && isURLExporting}
+								{m.export_url_generated()}
 							{:else}
-								Exportálás URL-ként
+								{m.export_as_url()}
 							{/if}
 						</p>
 					</button>
@@ -470,14 +471,14 @@
 					disabled={isExporting}
 				>
 					<span class="ix--add-document-note"></span>
-					<p>Saját óra hozzáadása</p>
+					<p>{m.add_own_lesson()}</p>
 				</button>
 			</div>
 
 			<div class="editor__undo-redo-buttons">
-				<Tooltip content="Visszavonás">
+				<Tooltip content={m.undo()}>
 					<button
-						aria-label="visszavonás"
+						aria-label={m.undo()}
 						class="button button--icon --pulse-on-hover --fs-h5"
 						disabled={!canUndo || isImageExporting}
 						onclick={handleUndo}
@@ -485,9 +486,9 @@
 						<div class="ix--undo"></div>
 					</button>
 				</Tooltip>
-				<Tooltip content="Újracsinálás">
+				<Tooltip content={m.redo()}>
 					<button
-						aria-label="újracsinálás"
+						aria-label={m.redo()}
 						class="button button--icon --pulse-on-hover --fs-h5"
 						disabled={!canRedo || isImageExporting}
 						onclick={handleRedo}
@@ -522,13 +523,13 @@
 	{@const saveId = savedLessons.getSaveIds()[Number(id)]}
 
 	{#if id === 'add'}
-		<Tooltip content="Új órarend készítése" config={{ openDelay: 300 }}>
+		<Tooltip content={m.create_new_timetable()} config={{ openDelay: 300 }}>
 			<!-- svelte-ignore a11y_no_static_element_interactions -->
 			<div class="editor__inactive-tab">
 				{#if savedLessons.getMaxSaveCount() !== savedLessons.getSaveIds().length}
 					<div class="icon --fs-h4 ix--add-circle"></div>
 				{:else}
-					<p class="--warning">Maximum órarendszám elérve</p>
+					<p class="--warning">{m.create_new_timetable_max_reached()}</p>
 				{/if}
 			</div>
 		</Tooltip>
@@ -557,23 +558,20 @@
 			</div>
 			{#if savedLessons.getSaveIds().length > 1}
 				<div class="editor__active-tab-buttons">
-					<Tooltip
-						content="Órarend óráinak átmásolása másik órarendbe"
-						classes="editor__active-tab-button-holder"
-					>
+					<Tooltip content={m.copy_timetable()} classes="editor__active-tab-button-holder">
 						<button
 							class="button button--icon --pulse-on-hover"
-							aria-label="Órarend óráinak átmásolása másik órarendbe"
+							aria-label={m.copy_timetable()}
 							onclick={openCopyTimetableModal}
 							disabled={isImageExporting}
 						>
 							<div class="ix--export"></div>
 						</button>
 					</Tooltip>
-					<Tooltip content="Órarend duplikálása" classes="editor__active-tab-button-holder">
+					<Tooltip content={m.duplicate_timetable()} classes="editor__active-tab-button-holder">
 						<button
 							class="button button--icon --pulse-on-hover"
-							aria-label="Órarend duplikálása"
+							aria-label={m.duplicate_timetable()}
 							onclick={duplicateTimetable}
 							disabled={isImageExporting}
 						>
@@ -582,10 +580,10 @@
 							></div>
 						</button>
 					</Tooltip>
-					<Tooltip content="Órarend törlése" classes="editor__active-tab-button-holder">
+					<Tooltip content={m.delete_timetable()} classes="editor__active-tab-button-holder">
 						<button
 							class="button button--icon --pulse-on-hover --error"
-							aria-label="Órarend törlése"
+							aria-label={m.delete_timetable()}
 							onclick={openDeleteSaveModal}
 							disabled={isImageExporting}
 						>
@@ -595,10 +593,10 @@
 				</div>
 			{:else}
 				<div>
-					<Tooltip content="Órarend duplikálása" classes="editor__active-tab-button-holder">
+					<Tooltip content={m.duplicate_timetable()} classes="editor__active-tab-button-holder">
 						<button
 							class="button button--icon --pulse-on-hover"
-							aria-label="Órarend duplikálása"
+							aria-label={m.duplicate_timetable()}
 							onclick={duplicateTimetable}
 							disabled={isImageExporting}
 						>
@@ -614,7 +612,7 @@
 		{@const isDraggingLesson = tableState === 'drag'}
 		{@const showIcon = droppedSaveId == saveId || isDraggingLesson}
 		<Tooltip
-			content="Dobd ide az órát az átmásoláshoz"
+			content={m.drop_lesson_here()}
 			triggerType={isDraggingLesson ? 'dragover' : 'none'}
 			classes="tooltip-trigger--ful-size"
 			config={{ floatingConfig: { computePosition: { placement: 'top' } } }}
@@ -652,10 +650,12 @@
 />
 
 <dialog class="dialog" bind:this={deleteTimetableDialogElement}>
-	<p class="--fs-h5">Biztosan törlöd "{currentManager?.getSaveName()}" nevű órarendedet?</p>
+	<p class="--fs-h5">
+		{m.delete_timetable_dialog_title({ name: currentManager?.getSaveName() ?? '' })}
+	</p>
 	<div class="icon-text --warning">
 		<span class="ix--warning"></span>
-		<p>Ez a művelet nem visszavonható</p>
+		<p>{m.delete_timetable_warning()}</p>
 	</div>
 	<div class="dialog__buttons">
 		<button
@@ -665,37 +665,36 @@
 				if (!savedLessons.removeSave(currentSaveId)) {
 					openOperationWarningModal();
 				}
-			}}>Törlés</button
+			}}>{m.delete_timetable_action()}</button
 		>
 		<button class="button --pulse-on-hover" onclick={() => deleteTimetableDialogElement.close()}
-			>Mégsem</button
+			>{m.lesson_cancel()}</button
 		>
 	</div>
 </dialog>
 
 <dialog class="dialog" bind:this={operationWarningDialogElement}>
-	<p class="--fs-h5">Hiba művelet végrehajtása közben</p>
+	<p class="--fs-h5">{m.operation_warning_title()}</p>
 	<div class="icon-text --error">
 		<span class="ix--warning-rhomb"></span>
-		<p>Ez a művelet nem végrehajtható</p>
+		<p>{m.operation_warning_body()}</p>
 	</div>
 	<p>
-		Ez előfordulhat akkor, ha egyszerre több lapon szerkesztesz órarendet. Töltsd újra az oldalt,
-		hogy a legfrissebb órarendjeidet lásd!
+		{m.operation_warning_detail()}
 	</p>
 	<div class="dialog__buttons">
 		<button class="button --pulse-on-hover" onclick={() => operationWarningDialogElement.close()}
-			>Bezárás</button
+			>{m.close()}</button
 		>
 	</div>
 </dialog>
 
 <dialog class="dialog" bind:this={copyTimetableDialogElement}>
 	<p class="--fs-h5">
-		"{currentManager?.getSaveName()}" órarend {lessonsToCopy.length > 1 ? 'óráinak' : 'órájának'} átmásolása
+		{m.copy_timetable_dialog_title({ name: currentManager?.getSaveName() ?? '' })}
 	</p>
 	<Combobox
-		label="Cél órarend"
+		label={m.target_timetable()}
 		options={savedLessons.getSaveIds().filter((id) => id !== currentManager?.getSaveId())}
 		optionText={(id) => savedLessons.getSaveNameForId(id) ?? ''}
 		bind:selected={timetableCopyTargetId}
@@ -708,20 +707,20 @@
 		>
 			<span class={timetableCopyTargetId === 'done' ? 'ix--single-check --bounce-in' : 'ix--export'}
 			></span>
-			<p>Átmásolás</p>
+			<p>{m.copy()}</p>
 		</button>
 		<button
 			class="button --pulse-on-hover"
 			onclick={() => {
 				copyTimetableDialogElement.close();
 				timetableCopyTargetId = '';
-			}}>Mégsem</button
+			}}>{m.lesson_cancel()}</button
 		>
 	</div>
 </dialog>
 
 <dialog class="dialog" bind:this={urlExportDialogElement}>
-	<p class="--fs-h5">A "{currentManager?.getSaveName()}" nevű órarendhez generált URL:</p>
+	<p class="--fs-h5">{m.generated_url_title({ name: currentManager?.getSaveName() ?? '' })}</p>
 	<p class="url">
 		{exportUrl}
 	</p>
@@ -734,10 +733,10 @@
 			}}
 		>
 			<span class="ix--copy"></span>
-			<p>Másolás</p>
+			<p>{m.copy()}</p>
 		</button>
 		<button class="button --pulse-on-hover" onclick={() => urlExportDialogElement.close()}
-			>Vissza</button
+			>{m.back()}</button
 		>
 	</div>
 </dialog>
@@ -745,7 +744,7 @@
 <LessonDialog
 	bind:dialogOpenHandler={createLessonDialogOpenHandler}
 	onSave={handleNewLesson}
-	title="Saját óra hozzáadása"
+	title={m.add_own_lesson()}
 />
 
 <audio bind:this={audioPlayer} src="bad_apple.mp3"></audio>
