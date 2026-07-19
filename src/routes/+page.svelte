@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { page } from '$app/state';
-	import { replaceState } from '$app/navigation';
 
 	import Editor from '$lib/components/Editor.svelte';
 	import Search from '$lib/components/Search.svelte';
@@ -18,6 +17,8 @@
 	} from '$lib/lessons/savedLessons.svelte';
 	import { setContext } from 'svelte';
 	import { decodeURI } from '$lib/lessons/encode';
+	import DismissibleAlert from '$lib/components/DismissibleAlert.svelte';
+	import { m } from '$lib/paraglide/messages';
 
 	const savedLessons = loadSavedLessonsFromLocalStorage();
 
@@ -75,4 +76,7 @@
 </svelte:head>
 
 <Search />
+<DismissibleAlert localStorageKey="timetable_save_location">
+	<p>{m.timetable_save_location()}</p>
+</DismissibleAlert>
 <Editor />

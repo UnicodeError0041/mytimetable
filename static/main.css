@@ -114,8 +114,15 @@ main{
   padding: var(--body-padding);
 }
 
+header {
+  display: grid;
+  width: 100%;
+  justify-items: center;
+}
+
 .nav{
   display: flex;
+  width: 100%;
   flex-direction: row;
   padding: 0.5rem;
 }
@@ -329,4 +336,15 @@ footer {
   100% {
     scale: 100%;
   }
+}
+
+
+.dismissible-alert.dismissible-alert{
+  grid-template-columns: 1.5rem 1fr auto;
+  align-items: center;
+  width: fit-content;
+  /* margin-inline: auto; */
+  /* border: 1px solid currentColor;
+  border-radius: 0.3rem; */
+  /* padding: 0.5rem; */
 }

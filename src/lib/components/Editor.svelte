@@ -18,11 +18,11 @@
 	import LessonDialog from './LessonDialog.svelte';
 	import { encodeURI } from '$lib/lessons/encode';
 	import Combobox from './inputs/Combobox.svelte';
-	import type { defaultServerMainFields } from 'vite';
 	import {
 		createBadAppleLessonManager,
 		type BadAppleLessonManager
 	} from '$lib/lessons/badAppleLessonManager.svelte';
+	import DismissibleAlert from './DismissibleAlert.svelte';
 
 	let deleteTimetableDialogElement: HTMLDialogElement = $state(null!);
 	let operationWarningDialogElement: HTMLDialogElement = $state(null!);
@@ -361,10 +361,9 @@
 
 	<div class="editor">
 		{#if !showQueriedLessons}
-			<div class="icon-text">
-				<span class="ix--info"></span>
+			<DismissibleAlert localStorageKey="hidden_search_results">
 				<p>{m.hidden_results()}</p>
-			</div>
+			</DismissibleAlert>
 		{/if}
 
 		<div class="editor__buttons">
